@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">Instagram</title>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="38%" r="65%">
+      <stop offset="0" stop-color="#123a78"/>
+      <stop offset="1" stop-color="#031a49"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="15" y1="15" x2="113" y2="113" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#8B35FF"/><stop offset=".5" stop-color="#E735D2"/><stop offset="1" stop-color="#FF2A73"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="64" cy="64" r="57" fill="url(#bg)" stroke="url(#ring)" stroke-width="5" filter="url(#glow)"/>
+  <rect x="34" y="34" width="60" height="60" rx="17" fill="none" stroke="#fff" stroke-width="7"/>
+  <circle cx="64" cy="64" r="15" fill="none" stroke="#fff" stroke-width="7"/>
+  <circle cx="84" cy="44" r="4.5" fill="#fff"/>
+</svg>
