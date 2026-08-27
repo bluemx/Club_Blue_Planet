@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1787763664178,
+  "projectRoot": "/Users/fldsmdfr/Documents/GitHub/Club_Blue_Planet",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "CLUB BLUE PLANET ASSETES": {
+      "path": "CLUB BLUE PLANET ASSETES",
+      "purpose": null,
+      "fileCount": 17,
+      "lastAccessed": 1787763664164,
+      "keyFiles": [
+        "Hero-Banner.svg",
+        "Icono-01.svg",
+        "Icono-02.svg",
+        "Icono-03.svg",
+        "Icono-04.svg"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}
