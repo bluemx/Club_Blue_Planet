@@ -158,7 +158,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
-const MAX_SIDE = 1600 // px — sharp on any phone, far under the API's 8 MB
+// px — evidence is looked at on a phone or in a dialog; more is weight, not detail
+const MAX_SIDE = 1280
 
 // ------------------------------------------------------------------ stickers
 
@@ -413,8 +414,14 @@ async function flatten () {
     ctx.drawImage(img, -size / 2, -size / 2, size, size)
     ctx.restore()
   }
-  const blob = await new Promise(resolve => out.toBlob(resolve, 'image/jpeg', 0.88))
-  return new File([blob], 'mision.jpg', { type: 'image/jpeg' })
+  // WebP where the browser can encode it (Chrome, Android, Firefox): about a
+  // third smaller than JPEG at the same look. Safari hands back a PNG when
+  // asked for WebP, so it gets JPEG. ponytail: no AVIF — no browser encodes it
+  // from a canvas; it would take a WASM encoder, slow on a phone.
+  const encode = (type, q) => new Promise(resolve => out.toBlob(resolve, type, q))
+  let blob = await encode('image/webp', 0.8)
+  if (blob?.type !== 'image/webp') blob = await encode('image/jpeg', 0.82)
+  return new File([blob], blob.type === 'image/webp' ? 'mision.webp' : 'mision.jpg', { type: blob.type })
 }
 
 async function finish () {
