@@ -6,14 +6,11 @@
     />
 
     <!-- A daily prompt, not a settings link: the face is meant to change often. -->
-    <router-link to="/kid/avatar" class="bp-sheet bp-me">
-      <KidAvatar :avatar="me?.avatar" :seed="me?.id" :size="64" />
-      <span class="bp-me-text">
-        <span class="bp-me-name">¿Cómo te sientes hoy, {{ me?.name }}?</span>
-        <span class="bp-me-cta">¡Demuéstralo con tu avatar!</span>
-        <span class="bp-moods" aria-hidden="true">😄 😴 😎 🤪 🥳</span>
-      </span>
-      <q-icon name="chevron_right" size="24px" color="primary" />
+    <router-link to="/kid/avatar" class="bp-sheet bp-me bp-me--hero">
+      <span class="bp-me-name">¿Cómo te sientes hoy, {{ me?.name }}?</span>
+      <KidAvatar :avatar="me?.avatar" :seed="me?.id" :size="168" class="bp-me-face" />
+      <span class="bp-moods" aria-hidden="true">😄 😴 😎 🤪 🥳</span>
+      <span class="bp-me-cta"><q-icon name="edit" size="16px" /> ¡Demuéstralo con tu avatar!</span>
     </router-link>
 
     <div class="bp-sheet">
@@ -50,22 +47,6 @@
         </router-link>
       </div>
     </div>
-
-    <div class="bp-sheet">
-      <div class="bp-sheet-note">
-        <q-icon name="auto_awesome" color="primary" size="26px" />
-        ¿Cómo reportar la tarea?
-      </div>
-
-      <div class="bp-report-grid">
-        <button v-for="w in ways" :key="w.label" type="button" class="bp-report">
-          <span class="bp-row-badge" :class="w.color">
-            <q-icon :name="w.icon" />
-          </span>
-          <span class="bp-report-label">{{ w.label }}</span>
-        </button>
-      </div>
-    </div>
   </q-page>
 </template>
 
@@ -81,13 +62,6 @@ const { data, loading, error } = useResource(assignments)
 const latest = computed(() =>
   (data.value?.assignments ?? []).filter(a => a.status === 'pendiente').slice(0, 3)
 )
-
-const ways = [
-  { label: 'Dibujo', icon: 'draw', color: 'purple' },
-  { label: 'Foto', icon: 'photo_camera', color: 'blue' },
-  { label: 'Video', icon: 'videocam', color: 'pink' },
-  { label: 'Subir archivo', icon: 'upload', color: 'green' },
-]
 </script>
 
 <style scoped>
@@ -96,10 +70,8 @@ const ways = [
 }
 
 .bp-moods {
-  display: block;
-  margin-top: 4px;
-  font-size: 16px;
-  letter-spacing: 2px;
+  font-size: 20px;
+  letter-spacing: 4px;
 }
 
 .bp-mtiles {
@@ -220,39 +192,5 @@ const ways = [
 
 @media (prefers-reduced-motion: reduce) {
   .bp-mtile:hover, .bp-mtile:active { transform: none; }
-}
-
-.bp-report-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-
-.bp-report {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 4px;
-  border: 1px solid #EEF3FB;
-  border-radius: 18px;
-  background: linear-gradient(180deg, #FFFFFF 0%, #F5F9FF 100%);
-  box-shadow: inset 0 -2px 0 rgba(20, 103, 228, .08), 0 8px 16px -10px rgba(20, 103, 228, .35);
-  cursor: pointer;
-  font-family: inherit;
-  transition: border-color .18s, transform .18s;
-}
-
-.bp-report:active {
-  transform: scale(.97);
-  border-color: #B9D4F7;
-}
-
-.bp-report-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: #55708F;
-  line-height: 1.2;
-  text-align: center;
 }
 </style>

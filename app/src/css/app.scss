@@ -1298,6 +1298,44 @@ a.bp-submit {
   color: $primary;
 }
 
+// The kid's home hero: their face is the biggest thing on the screen.
+.bp-me--hero {
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+
+.bp-me-face {
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 6px #fff,
+    0 0 0 9px #CFE1FB,
+    0 22px 38px -14px rgba(20, 103, 228, .5);
+  transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.bp-me:hover .bp-me-face { transform: scale(1.03) rotate(-2deg); }
+
+.bp-me--hero .bp-me-name { font-size: 18px; }
+
+.bp-me--hero .bp-me-cta {
+  display: inline-flex;
+  margin-top: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #5AA2FF 0%, $primary 100%);
+  box-shadow: $bp-raise-primary;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bp-me:hover .bp-me-face { transform: none; }
+}
+
 // ===================================================================
 // Soft-3D buttons and selects, app-wide
 // ===================================================================

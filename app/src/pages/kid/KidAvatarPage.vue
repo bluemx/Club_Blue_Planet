@@ -58,7 +58,6 @@
       </div>
 
       <p v-if="error" class="bp-auth-error q-mt-sm">{{ error }}</p>
-      <p v-if="saved" class="bp-note-ok">¡Listo! Tus papás ya ven tu nuevo avatar.</p>
 
       <button type="button" class="bp-submit q-mt-md" :disabled="saving || !dirty" @click="save">
         {{ saving ? 'Guardando…' : 'Guardar mi avatar' }}
@@ -69,6 +68,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 import {
   PARTS, parseAvatar, defaultAvatar, randomAvatar, avatarUri, unlockOf, pieceTitle,
@@ -78,6 +78,7 @@ import { apiFetch } from '@/lib/auth'
 import { saveAvatar, useResource } from '@/lib/api'
 
 const me = currentUser
+const router = useRouter()
 
 // Starts from what they saved, or the default face they've been seeing.
 const initial = () => ({ ...(parseAvatar(me.value?.avatar) ?? defaultAvatar(me.value?.id)) })
@@ -93,7 +94,6 @@ const preview = computed(() => avatarUri(draft.value))
 const thumb = (v) => avatarUri({ ...draft.value, [part.value.key]: v }, null, part.value.zoom ?? null)
 
 const saving = ref(false)
-const saved = ref(false)
 const error = ref('')
 
 // Earned badges open pieces. Until they load, nothing that needs one is open.
@@ -120,14 +120,12 @@ function choose (v) {
   hint.value = null
   draft.value = { ...draft.value, [part.value.key]: v }
   pop.value++
-  saved.value = false
 }
 
 function shuffle () {
   hint.value = null
   draft.value = randomAvatar((key, value) => !isLocked(key, value))
   pop.value++
-  saved.value = false
 }
 
 async function save () {
@@ -138,7 +136,8 @@ async function save () {
     savedJson.value = JSON.stringify(draft.value)
     // The session is cached; keep this screen and the others in step without a refetch.
     if (me.value) me.value = { ...me.value, avatar: JSON.stringify(avatar) }
-    saved.value = true
+    // Saved means done: back home, where the new face is the hero.
+    router.push('/kid')
   } catch (err) {
     error.value = err.data?.error || 'No se pudo guardar. Inténtalo de nuevo.'
   } finally {
