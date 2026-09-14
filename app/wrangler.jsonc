@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "clubblueplanet-app",
+  "compatibility_date": "2026-08-26",
+  "account_id": "749fddd2fc3c14d436d163395cfaa923",
+  "assets": {
+    "directory": "./dist/spa",
+    // Router is in hash mode, so deep links never hit the server as paths —
+    // this only covers someone typing a stray path directly.
+    "not_found_handling": "single-page-application"
+  }
+}

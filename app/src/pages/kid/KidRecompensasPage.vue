@@ -1,0 +1,146 @@
+<template>
+  <q-page class="bp-gradient-bg bp-page-pad">
+    <PageHeader
+      title="Canjea tus puntos"
+      :subtitle="['Junta puntos completando misiones', 'y elige tu recompensa favorita.']"
+    />
+
+    <div class="bp-sheet">
+      <div class="bp-wallet">
+        <span class="bp-wallet-label">Tienes</span>
+        <span class="bp-wallet-value">
+          <q-icon name="star" size="22px" />
+          {{ points }}
+        </span>
+        <span class="bp-wallet-label">puntos</span>
+      </div>
+
+      <div class="bp-sheet-note">
+        <q-icon name="redeem" color="primary" size="26px" />
+        Pídele a tus papás que te ayuden a canjear.
+      </div>
+
+      <q-inner-loading :showing="loading" />
+      <p v-if="error" class="bp-auth-error">{{ error }}</p>
+      <p v-if="message" class="bp-note-ok">{{ message }}</p>
+
+      <template v-if="!loading && !error">
+        <div
+          v-for="r in list"
+          :key="r.id"
+          class="bp-row"
+          :class="{ 'bp-row--locked': r.points > points }"
+        >
+          <div class="bp-row-badge" :class="r.color">
+            <q-icon :name="r.icon" />
+          </div>
+          <div class="col">
+            <div class="bp-row-title">{{ r.title }}</div>
+            <div class="bp-row-subtitle">
+              {{ r.points > points ? `Te faltan ${r.points - points} puntos` : '¡Ya puedes canjearla!' }}
+            </div>
+            <q-linear-progress
+              rounded size="6px" class="q-mt-xs"
+              :value="Math.min(points / r.points, 1)"
+              :color="r.points > points ? 'blue-3' : 'secondary'"
+              track-color="blue-1"
+            />
+          </div>
+          <q-btn
+            v-if="r.points <= points"
+            unelevated rounded no-caps size="sm"
+            color="primary" label="Canjear"
+            :loading="busyId === r.id"
+            @click="redeem(r)"
+          />
+          <div v-else class="bp-points-pill">
+            <q-icon name="star" size="14px" />
+            {{ r.points }}
+          </div>
+        </div>
+      </template>
+    </div>
+  </q-page>
+</template>
+
+<script setup>
+import { ref, computed, onBeforeUnmount } from 'vue'
+import PageHeader from '@/components/PageHeader.vue'
+import { rewards, summary, redeemReward, useResource } from '@/lib/api'
+import { onNotification } from '@/lib/notifications'
+
+const busyId = ref(null)
+const message = ref('')
+
+const { data: rewardData, loading, error } = useResource(rewards)
+const { data: summaryData, reload: reloadSummary } = useResource(summary)
+
+const list = computed(() => rewardData.value?.rewards ?? [])
+const points = computed(() => summaryData.value?.totals?.points ?? 0)
+
+// A delivery, a rejection or a revert all move the balance on screen.
+const off = onNotification((n) => {
+  if (n.kind === 'premio' || n.kind === 'devuelto') reloadSummary({ quiet: true })
+})
+onBeforeUnmount(off)
+
+async function redeem (r) {
+  busyId.value = r.id
+  message.value = ''
+  try {
+    await redeemReward(r.id)
+    message.value = `¡Pediste "${r.title}"! Tus papás te la entregarán.`
+    await reloadSummary()
+  } catch (err) {
+    message.value = err.data?.error || 'No se pudo canjear.'
+  } finally {
+    busyId.value = null
+  }
+}
+</script>
+
+<style scoped>
+.bp-wallet {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 14px 10px 16px;
+  margin-bottom: 12px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #EAF3FF, #D5E8FF);
+  border: 1px solid #C9E1FF;
+}
+
+.bp-wallet-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #55708F;
+}
+
+.bp-wallet-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #0B2A5B;
+}
+
+.bp-wallet-value .q-icon {
+  color: #FFC531;
+}
+
+.bp-row--locked {
+  opacity: .7;
+}
+
+.bp-note-ok {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #16A66A;
+  text-align: center;
+  margin: 0 0 10px;
+}
+</style>

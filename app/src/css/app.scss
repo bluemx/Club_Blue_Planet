@@ -1,0 +1,1220 @@
+// app global css
+@import '@fontsource/nunito/400.css';
+@import '@fontsource/nunito/600.css';
+@import '@fontsource/nunito/700.css';
+@import '@fontsource/nunito/800.css';
+
+$ink-muted: #7C93B5;
+$hairline: #E8F0FB;
+
+body {
+  font-family: 'Nunito', ui-rounded, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: $dark;
+}
+
+.bp-gradient-bg {
+  background:
+    radial-gradient(90% 55% at 50% 0%, #F2F8FF 0%, rgba(242,248,255,0) 60%),
+    linear-gradient(180deg, #DCEBFF 0%, #C4DFFF 55%, #A9CFFF 100%);
+  background-attachment: fixed;
+}
+
+.bp-card {
+  border-radius: 18px;
+}
+
+// ---------- Hero ----------
+.bp-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 20px 26px;
+  text-align: center;
+}
+
+.bp-hero::before,
+.bp-hero::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.bp-hero::before {
+  width: 260px;
+  height: 260px;
+  top: -110px;
+  left: -90px;
+  border: 1.5px solid rgba(255, 255, 255, .7);
+}
+
+.bp-hero::after {
+  width: 180px;
+  height: 180px;
+  bottom: -90px;
+  right: -50px;
+  background: radial-gradient(circle, rgba(255,255,255,.45) 0%, rgba(255,255,255,0) 70%);
+}
+
+.bp-hero-dots {
+  position: absolute;
+  top: 18px;
+  right: 16px;
+  width: 74px;
+  height: 66px;
+  background-image: radial-gradient(rgba(20, 103, 228, .22) 1.6px, transparent 1.6px);
+  background-size: 11px 11px;
+  pointer-events: none;
+}
+
+.bp-hero-logo {
+  height: 88px;
+  filter: drop-shadow(0 8px 14px rgba(11, 42, 91, .28));
+  position: relative;
+  z-index: 1;
+}
+
+.bp-hero-title {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: -.4px;
+  line-height: 1.15;
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.bp-hero-subtitle {
+  color: #4E6E99;
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-top: 6px;
+  position: relative;
+  z-index: 1;
+}
+
+// Desktop page heading (no hero art)
+.bp-page-title {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -.3px;
+}
+
+.bp-page-subtitle {
+  color: $ink-muted;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+// ---------- Sheet ----------
+.bp-sheet {
+  background: #fff;
+  border-radius: 26px;
+  border: 1px solid $hairline;
+  box-shadow: 0 14px 34px rgba(20, 103, 228, .13);
+  margin: 0 14px 14px;
+  padding: 14px 12px;
+  position: relative;
+  z-index: 1;
+}
+
+.bp-sheet-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #55708F;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.35;
+  padding: 2px 6px 12px;
+}
+
+.bp-sheet-note > .q-icon {
+  flex-shrink: 0;
+}
+
+// ---------- Rows ----------
+.bp-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border: 1px solid $hairline;
+  border-radius: 18px;
+  margin-bottom: 8px;
+  background: #fff;
+  transition: box-shadow .18s, transform .18s;
+}
+
+.bp-row:last-of-type {
+  margin-bottom: 0;
+}
+
+.bp-row--tappable:active {
+  transform: scale(.99);
+  box-shadow: 0 4px 14px rgba(20, 103, 228, .12);
+}
+
+.bp-row-badge {
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 23px;
+}
+
+.bp-row-badge.blue   { background: linear-gradient(160deg, #EAF3FF, #D8E9FF); color: $primary; }
+.bp-row-badge.green  { background: linear-gradient(160deg, #E6FBF0, #D2F5E3); color: #16A66A; }
+.bp-row-badge.purple { background: linear-gradient(160deg, #F3EDFF, #E8DEFF); color: #7C4DEF; }
+.bp-row-badge.pink   { background: linear-gradient(160deg, #FFEDF5, #FFDDEB); color: #E8438E; }
+.bp-row-badge.amber  { background: linear-gradient(160deg, #FFF6E0, #FFEDC4); color: #E0A413; }
+
+.bp-row-title {
+  font-weight: 700;
+  font-size: 13.5px;
+  line-height: 1.25;
+}
+
+.bp-row-subtitle {
+  color: $ink-muted;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 1px;
+}
+
+.bp-points-pill {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: #EDF4FF;
+  color: $primary;
+  font-weight: 800;
+  font-size: 12.5px;
+  border-radius: 999px;
+  padding: 6px 11px;
+}
+
+.bp-points-pill .q-icon {
+  color: #FFC531;
+}
+
+// ---------- CTA ----------
+.bp-cta {
+  display: block;
+  margin: 14px auto 2px;
+  border: 1.5px solid #CFE1FB;
+  border-radius: 999px;
+  color: $primary;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 4px 18px;
+}
+
+// ---------- Brand icon set ----------
+.bp-icon {
+  --bp-ink: #1467E4;
+  --bp-fill: #BBDBFF;
+  --bp-pale: #E6F1FF;
+  --bp-leaf: #3FBF6F;
+  --bp-accent: #2F9BF5;
+  --bp-warm: #FF9427;
+
+  width: 28px;
+  height: 28px;
+  display: block;
+  overflow: visible;
+}
+
+// Unselected: same brand hues, just softened — never washed out to grey
+.bp-icon:not(.bp-icon--active) {
+  --bp-ink: #6E9BD8;
+  --bp-fill: #DCEAFB;
+  --bp-pale: #EFF5FD;
+  --bp-leaf: #86CFA6;
+  --bp-accent: #8FBDEA;
+  --bp-warm: #FFC48A;
+}
+
+.bp-ico-g {
+  transform-origin: 24px 26px;
+  transition: transform .32s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+// --- idle motion on the selected tab ---
+.bp-icon--active .bp-ico-g {
+  animation: bp-pop .42s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.bp-icon--active .bp-ico-leaf {
+  transform-origin: 36px 34px;
+  animation: bp-sway 2.6s ease-in-out .3s infinite;
+}
+
+.bp-icon--active .bp-ico-check {
+  animation: bp-tick .45s ease-out both;
+}
+
+.bp-icon--active .bp-ico-check--2 {
+  animation-delay: .12s;
+}
+
+.bp-icon--active .bp-ico-star {
+  transform-origin: 24px 31px;
+  animation: bp-twinkle 2.4s ease-in-out .4s infinite;
+}
+
+.bp-icon--active .bp-ico-bow {
+  transform-origin: 24px 12px;
+  animation: bp-wiggle 2.8s ease-in-out .4s infinite;
+}
+
+.bp-icon--active .bp-ico-arrow {
+  animation: bp-rise .5s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+.bp-icon--active .bp-ico-bar {
+  transform-origin: center bottom;
+  animation: bp-grow .45s cubic-bezier(.34, 1.56, .64, 1) both;
+}
+
+.bp-icon--active .bp-ico-bar--2 { animation-delay: .07s; }
+.bp-icon--active .bp-ico-bar--3 { animation-delay: .14s; }
+
+@keyframes bp-pop {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.18) translateY(-2px); }
+  100% { transform: scale(1); }
+}
+
+@keyframes bp-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-14deg); }
+}
+
+@keyframes bp-tick {
+  from { opacity: 0; transform: scale(.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes bp-twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50%      { transform: scale(1.22) rotate(14deg); }
+}
+
+@keyframes bp-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  30%      { transform: rotate(-7deg); }
+  60%      { transform: rotate(7deg); }
+}
+
+@keyframes bp-rise {
+  from { opacity: 0; transform: translate(-4px, 7px); }
+  to   { opacity: 1; transform: translate(0, 0); }
+}
+
+@keyframes bp-grow {
+  from { transform: scaleY(.35); }
+  to   { transform: scaleY(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bp-icon *,
+  .bp-icon {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+// ---------- Floating bottom nav ----------
+.bp-navbar-wrap {
+  background: transparent;
+  padding: 0 10px 10px;
+}
+
+.bp-navbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 2px;
+  background: #fff;
+  border-radius: 26px;
+  box-shadow: 0 10px 26px rgba(20, 103, 228, .2);
+  padding: 8px 8px 7px;
+}
+
+// Shared nav item (phone bar + desktop header)
+.bp-navlink {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 1px 4px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: #7B96BC;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: background .2s, color .2s;
+}
+
+.bp-navlink--active {
+  background: #EAF2FF;
+  color: $primary;
+}
+
+// The raised "Más" action, last in the bar
+.bp-more {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0 6px 4px;
+  text-decoration: none;
+}
+
+.bp-fab {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #4E97FF, $primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(20, 103, 228, .45);
+  margin-top: -20px;
+  border: 4px solid #fff;
+  transition: transform .25s cubic-bezier(.34, 1.56, .64, 1), box-shadow .25s;
+}
+
+.bp-fab .bp-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.bp-more:active .bp-fab,
+.bp-more--active .bp-fab {
+  transform: scale(1.08);
+  box-shadow: 0 10px 22px rgba(20, 103, 228, .6);
+}
+
+.bp-fab-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: $primary;
+}
+
+// ---------- Desktop header (same language as the phone bar) ----------
+.bp-topbar-wrap {
+  background: transparent;
+  box-shadow: none;
+  padding: 18px 14px 0;
+  overflow: visible;
+}
+
+.bp-topbar-wrap .bp-topbar {
+  overflow: visible;
+}
+
+.bp-topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border-radius: 26px;
+  box-shadow: 0 10px 26px rgba(20, 103, 228, .16);
+  padding: 8px 14px 7px;
+}
+
+.bp-topbar-logo {
+  height: 78px;
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 2;
+  // negative block margins let it break out of the bar without growing it
+  margin: -20px 14px -20px -2px;
+  filter: drop-shadow(0 8px 14px rgba(11, 42, 91, .28));
+}
+
+.bp-topbar-nav {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+}
+
+.bp-topbar .bp-navlink {
+  flex: 0 1 auto;
+  padding: 5px 12px 4px;
+  font-size: 11px;
+}
+
+.bp-topbar .bp-icon {
+  width: 28px;
+  height: 28px;
+}
+
+// On the header the FAB sits inline, not raised
+.bp-more--inline .bp-fab {
+  margin-top: 0;
+  border-width: 0;
+  width: 42px;
+  height: 42px;
+}
+
+.bp-more--inline {
+  padding-bottom: 0;
+}
+
+// Keep content clear of the floating nav
+.bp-page-pad {
+  padding-bottom: 26px;
+}
+
+.bp-desktop-wrap {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+// ===================================================================
+// Auth screens (login, registro, recuperar, cuenta infantil)
+// ===================================================================
+.bp-auth {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.bp-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.bp-blob--1 {
+  width: 260px;
+  height: 260px;
+  top: -90px;
+  left: -110px;
+  border: 1.5px solid rgba(255, 255, 255, .65);
+}
+
+.bp-blob--2 {
+  width: 340px;
+  height: 340px;
+  bottom: -170px;
+  right: -130px;
+  background: radial-gradient(circle, rgba(97, 165, 255, .45) 0%, rgba(97, 165, 255, 0) 70%);
+}
+
+.bp-blob--3 {
+  width: 180px;
+  height: 180px;
+  bottom: 40px;
+  left: -80px;
+  background: radial-gradient(circle, rgba(255, 255, 255, .5) 0%, rgba(255, 255, 255, 0) 70%);
+}
+
+.bp-auth-dots {
+  position: absolute;
+  top: 26px;
+  right: 18px;
+  width: 76px;
+  height: 68px;
+  background-image: radial-gradient(rgba(20, 103, 228, .22) 1.6px, transparent 1.6px);
+  background-size: 11px 11px;
+  pointer-events: none;
+}
+
+.bp-auth-inner {
+  width: 100%;
+  max-width: 350px;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.bp-auth-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  position: absolute;
+  top: -6px;
+  left: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: $primary;
+  text-decoration: none;
+}
+
+.bp-auth-logo {
+  height: 112px;
+  margin-bottom: 18px;
+  filter: drop-shadow(0 10px 18px rgba(11, 42, 91, .3));
+}
+
+.bp-auth-logo--sm {
+  height: 78px;
+  margin-bottom: 14px;
+}
+
+.bp-auth-card {
+  background: #fff;
+  border-radius: 26px;
+  border: 1px solid $hairline;
+  box-shadow: 0 16px 38px rgba(20, 103, 228, .16);
+  padding: 20px 16px 18px;
+  text-align: left;
+}
+
+// Quasar's base sets h1 to 6rem/6rem — pin both or the card gets huge gaps
+.bp-auth-title {
+  font-size: 19px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -.3px;
+  text-align: center;
+  margin: 0;
+  color: $dark;
+}
+
+.bp-auth-sub {
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: $ink-muted;
+  text-align: center;
+  margin: 5px 0 16px;
+}
+
+.bp-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// ---- fields ----
+.bp-field .q-field__control {
+  height: 46px;
+  padding-left: 6px;
+  background: #F7FAFF;
+}
+
+.bp-field .q-field__prepend {
+  padding-right: 8px;
+}
+
+.bp-field-tile {
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #4E97FF, $primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bp-field-tile svg {
+  width: 17px;
+  height: 17px;
+}
+
+.bp-eye {
+  color: #9DB4D4;
+  font-size: 20px;
+}
+
+.bp-auth-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 2px 2px 4px;
+}
+
+.bp-remember .q-checkbox__label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #55708F;
+}
+
+.bp-link {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: $primary;
+  text-decoration: none;
+}
+
+// ---- primary action ----
+.bp-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  padding: 13px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #4E97FF, $primary);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(20, 103, 228, .42);
+  transition: transform .18s cubic-bezier(.34, 1.56, .64, 1), box-shadow .18s, opacity .18s;
+}
+
+.bp-submit:hover:not(:disabled) {
+  box-shadow: 0 10px 22px rgba(20, 103, 228, .55);
+}
+
+.bp-submit:active:not(:disabled) {
+  transform: scale(.98);
+}
+
+.bp-submit:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.bp-submit-orn {
+  width: 13px;
+  height: 13px;
+  opacity: .75;
+  flex: 0 0 auto;
+}
+
+// any icon inside the button must be pinned, or the svg fills the row
+.bp-btn-icon {
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+}
+
+// the action doubles as a router-link on some screens
+a.bp-submit {
+  text-decoration: none;
+}
+
+// ---- secondary (outlined) action ----
+.bp-submit--ghost {
+  background: #F2F7FF;
+  color: $primary;
+  border: 1.5px solid $primary;
+  box-shadow: none;
+}
+
+.bp-submit--ghost:hover:not(:disabled) {
+  background: #E8F1FF;
+  box-shadow: none;
+}
+
+// ---- divider ----
+.bp-divider {
+  position: relative;
+  text-align: center;
+  margin: 16px 0 12px;
+}
+
+.bp-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: $hairline;
+}
+
+.bp-divider span {
+  position: relative;
+  background: #fff;
+  padding: 0 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #90A3C0;
+}
+
+.bp-auth-foot {
+  font-size: 12px;
+  font-weight: 600;
+  color: #55708F;
+  margin: 16px 0 0;
+}
+
+.bp-auth-foot a {
+  color: $primary;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+// ---- 6-digit code ----
+.bp-code {
+  display: flex;
+  gap: 7px;
+  justify-content: center;
+  margin: 4px 0 6px;
+}
+
+.bp-code-box {
+  width: 100%;
+  min-width: 0;
+  max-width: 46px;
+  aspect-ratio: 3 / 4;
+  border: 1.5px solid #DCE8F8;
+  border-radius: 14px;
+  background: #F7FAFF;
+  text-align: center;
+  font-family: inherit;
+  font-size: 21px;
+  font-weight: 800;
+  color: $dark;
+  outline: none;
+  transition: border-color .16s, background .16s, transform .16s;
+}
+
+.bp-code-box:focus {
+  border-color: $primary;
+  background: #fff;
+  transform: translateY(-2px);
+}
+
+.bp-code-box--filled {
+  border-color: #9FC6F7;
+  background: #EDF4FF;
+}
+
+.bp-hint {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: $ink-muted;
+  text-align: center;
+  margin: 10px 0 0;
+}
+
+.bp-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #55708F;
+  margin-bottom: 6px;
+}
+
+.bp-auth-error {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: $negative;
+  text-align: center;
+  margin: 4px 0 0;
+}
+
+// ---------- Evidence photo dialog ----------
+.bp-photo {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  width: 100%;
+  max-width: 460px;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+.bp-photo-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 12px 12px 18px;
+  border-bottom: 1px solid $hairline;
+}
+
+.bp-photo-img {
+  display: block;
+  width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  background: #F1F5FA;
+}
+
+.bp-photo-foot {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px 16px;
+  border-top: 1px solid $hairline;
+}
+
+.bp-photo-foot .bp-submit {
+  padding: 11px 16px;
+  font-size: 13.5px;
+}
+
+// ---------- Confirm dialog ----------
+.bp-confirm {
+  background: #fff;
+  border-radius: 24px;
+  padding: 22px 20px 18px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+}
+
+.bp-confirm-title {
+  font-size: 17px;
+  line-height: 1.3;
+  font-weight: 800;
+  color: $dark;
+  margin: 0 0 8px;
+}
+
+.bp-confirm-text {
+  font-size: 12.5px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: $ink-muted;
+  margin: 0 0 18px;
+}
+
+.bp-confirm-foot {
+  display: flex;
+  gap: 8px;
+}
+
+// ---------- "or" separator between two sheets ----------
+.bp-divider-or {
+  position: relative;
+  text-align: center;
+  margin: 2px 28px 14px;
+}
+
+.bp-divider-or::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: rgba(255, 255, 255, .75);
+}
+
+.bp-divider-or span {
+  position: relative;
+  padding: 0 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #4E6E99;
+  background: #CFE3FF;
+  border-radius: 999px;
+}
+
+.bp-note-ok {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #16A66A;
+  text-align: center;
+  margin: 10px 0 0;
+}
+
+// ---------- Pager ----------
+.bp-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.bp-pager-info {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: $ink-muted;
+  white-space: nowrap;
+}
+
+// ===================================================================
+// Notifications
+// ===================================================================
+.bp-bell {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  color: $primary;
+  flex: 0 0 auto;
+}
+
+.bp-bell-badge {
+  position: absolute;
+  top: 3px;
+  right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 2px solid #fff;
+  background: linear-gradient(180deg, #FF6A96, #E8438E);
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(232, 67, 142, .45);
+}
+
+// Phone: no top bar, so the bell floats over the page header.
+.bp-bell--float {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  right: 12px;
+  z-index: 2000;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(11, 43, 107, .08), 0 10px 22px -6px rgba(20, 103, 228, .38);
+}
+
+.bp-bell--ring .q-icon {
+  transform-origin: 50% 3px;
+  animation: bp-ring .9s cubic-bezier(.36, .07, .19, .97);
+}
+
+@keyframes bp-ring {
+  0%   { transform: rotate(0); }
+  15%  { transform: rotate(18deg); }
+  30%  { transform: rotate(-15deg); }
+  45%  { transform: rotate(10deg); }
+  60%  { transform: rotate(-6deg); }
+  75%  { transform: rotate(3deg); }
+  100% { transform: rotate(0); }
+}
+
+.bp-notif-menu {
+  width: min(360px, calc(100vw - 24px));
+  max-height: min(70vh, 520px);
+  padding: 8px;
+  border-radius: 22px !important;
+  box-shadow: 0 2px 6px rgba(11, 43, 107, .08), 0 24px 48px -12px rgba(11, 43, 107, .32) !important;
+}
+
+.bp-notif-head {
+  padding: 8px 10px 6px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.bp-notif-empty {
+  padding: 6px 14px 14px;
+  text-align: left;
+}
+
+.bp-notif {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 16px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.bp-notif + .bp-notif { margin-top: 2px; }
+
+.bp-notif:hover,
+.bp-notif:focus-visible { background: #F2F7FF; }
+
+.bp-notif--new { background: #EDF4FF; }
+
+.bp-notif .bp-row-badge {
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  font-size: 20px;
+}
+
+.bp-notif-text {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bp-notif-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.bp-notif-body {
+  display: block;
+  margin-top: 1px;
+  color: #55708F;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.bp-notif-time {
+  display: block;
+  margin-top: 3px;
+  color: $ink-muted;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.bp-toast {
+  border-radius: 18px !important;
+  box-shadow: 0 2px 6px rgba(11, 43, 107, .10), 0 20px 40px -12px rgba(11, 43, 107, .35) !important;
+  font-weight: 800;
+}
+
+.bp-toast .q-notification__caption {
+  color: #55708F;
+  opacity: 1;
+  font-weight: 600;
+}
+
+// ===================================================================
+// Segmented tabs — "Completadas" is the inbox approved missions fly into
+// ===================================================================
+.bp-seg {
+  // Sticky so the inbox stays on screen as a target however far down the
+  // list the parent has scrolled.
+  position: sticky;
+  top: 10px;
+  z-index: 3;
+  display: flex;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 4px;
+  border-radius: 16px;
+  background: #EEF4FD;
+  box-shadow: inset 0 1px 2px rgba(11, 43, 107, .06);
+}
+
+@media (min-width: 600px) {
+  .bp-seg { top: var(--bp-sticky-top, 100px); }
+}
+
+.bp-seg-btn {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 8px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #6F86A8;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .2s, color .2s, box-shadow .2s;
+}
+
+.bp-seg-btn--on {
+  background: #fff;
+  color: $primary;
+  box-shadow: 0 1px 2px rgba(11, 43, 107, .08), 0 6px 14px -6px rgba(20, 103, 228, .35);
+}
+
+.bp-seg-icon { display: inline-flex; }
+
+.bp-seg-count {
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #DCE8F8;
+  color: #4E6E99;
+  font-size: 11px;
+  line-height: 20px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.bp-seg-btn--on .bp-seg-count { background: #EAF2FF; color: $primary; }
+.bp-seg-count--done,
+.bp-seg-btn--on .bp-seg-count--done { background: #DDF6E9; color: #128A58; }
+
+// The landing: the counter takes the hit, the inbox swallows.
+.bp-seg-count--bump { animation: bp-bump .55s cubic-bezier(.34, 1.56, .64, 1); }
+.bp-seg-icon--gulp { animation: bp-gulp .45s cubic-bezier(.34, 1.56, .64, 1); }
+
+@keyframes bp-bump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.5); background: #16A66A; color: #fff; }
+  100% { transform: scale(1); }
+}
+
+@keyframes bp-gulp {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(.72); }
+  70%  { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+// The copy that flies; the real row collapses out from under it.
+.bp-ghost {
+  box-shadow: 0 18px 38px -8px rgba(20, 103, 228, .45) !important;
+  border-color: #CFE1FB !important;
+}
+
+.bp-fly-leave-active {
+  overflow: hidden;
+  max-height: 96px;
+  transition:
+    opacity .18s ease,
+    max-height .38s cubic-bezier(.4, 0, .2, 1) .1s,
+    margin .38s cubic-bezier(.4, 0, .2, 1) .1s,
+    padding .38s cubic-bezier(.4, 0, .2, 1) .1s,
+    border-width .38s .1s;
+}
+
+.bp-fly-leave-to {
+  opacity: 0;
+  max-height: 0;
+  margin-bottom: 0 !important;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+}
+
+.bp-fly-enter-active {
+  transition: opacity .3s ease, transform .35s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.bp-fly-enter-from {
+  opacity: 0;
+  transform: translateY(-6px) scale(.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bp-bell--ring .q-icon,
+  .bp-seg-count--bump,
+  .bp-seg-icon--gulp { animation: none; }
+  .bp-fly-leave-active,
+  .bp-fly-enter-active { transition: none; }
+}
