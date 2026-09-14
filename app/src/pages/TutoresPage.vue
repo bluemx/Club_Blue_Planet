@@ -62,7 +62,7 @@
         ¿Te invitaron? Únete a su familia
       </div>
 
-      <CodeInput v-model="joinCode" @complete="join" />
+      <CodeInput v-model="joinCode" @complete="start" />
 
       <p v-if="joinError" class="bp-auth-error">{{ joinError }}</p>
 
@@ -71,16 +71,18 @@
         color="primary"
         label="Unirme"
         :disable="joinCode.length < 6"
-        :loading="joining"
+        :loading="checking"
         class="full-width q-mt-md"
-        @click="join"
+        @click="start"
       />
 
       <p class="bp-hint">
-        Si ya registraste hijos, se moverán contigo a la otra familia
-        con sus misiones y sus puntos.
+        Antes de unirte te mostramos qué familia es
+        y qué pasa con los hijos que ya registraste.
       </p>
     </div>
+
+    <JoinFamilyDialog v-model="confirmOpen" :plan="plan" :loading="joining" @confirm="confirm" />
   </q-page>
 </template>
 
@@ -90,9 +92,10 @@ import { useRouter } from 'vue-router'
 import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import CodeInput from '@/components/CodeInput.vue'
+import JoinFamilyDialog from '@/components/JoinFamilyDialog.vue'
 import { apiFetch } from '@/lib/auth'
-import { invalidateSession } from '@/lib/session'
-import { joinFamily, useResource } from '@/lib/api'
+import { useResource } from '@/lib/api'
+import { useJoinFamily } from '@/lib/joinFamily'
 
 const router = useRouter()
 
@@ -112,28 +115,9 @@ async function makeInvite () {
   }
 }
 
-const joinCode = ref('')
-const joining = ref(false)
-const joinError = ref('')
-
-async function join () {
-  if (joinCode.value.length < 6 || joining.value) return
-
-  joining.value = true
-  joinError.value = ''
-
-  try {
-    const res = await joinFamily(joinCode.value)
-    // Which family this account acts in just changed — everything must re-read.
-    invalidateSession()
-    router.push(res.merged && res.movedChildren
-      ? '/hijos'   // show them their children landed safely
-      : '/')
-  } catch (err) {
-    joinError.value = err.data?.hint || err.data?.error || 'No se pudo unir.'
-    joinCode.value = ''
-  } finally {
-    joining.value = false
-  }
-}
+// Preview → confirm → join. Landing on Hijos after a merge shows the moved
+// children arrived safely.
+const {
+  joinCode, checking, joining, joinError, plan, confirmOpen, start, confirm,
+} = useJoinFamily((res) => router.push(res.merged && res.movedChildren ? '/hijos' : '/'))
 </script>

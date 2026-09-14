@@ -54,6 +54,10 @@ export const resolveProposal = (id, status, points) =>
 export const resolveRedemption = (id, status) =>
   apiFetch(`/api/redemptions/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) })
 
+/** What joining with this code would do — changes nothing. */
+export const previewJoin = (code) =>
+  apiFetch('/api/guardians/join/preview', { method: 'POST', body: JSON.stringify({ code }) })
+
 export const joinFamily = (code) =>
   apiFetch('/api/guardians/join', { method: 'POST', body: JSON.stringify({ code }) })
 

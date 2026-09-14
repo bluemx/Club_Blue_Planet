@@ -673,69 +673,101 @@ api.post('/guardians/invite', async (c) => {
   return c.json({ code, expiresAt })
 })
 
-/** An adult with their own account joins an existing family. */
-api.post(
-  '/guardians/join',
-  rateLimit({ name: 'guardians-join', windowSec: 300, max: 5 }),
-  async (c) => {
-  const blocked = parentOnly(c); if (blocked) return blocked
+/**
+ * Everything a join would do, worked out without doing any of it. The preview
+ * and the join both run this, so what the adult confirms is exactly what then
+ * happens. Returns `{ error, status }` or the plan.
+ */
+async function planJoin (c, code) {
+  if (!/^\d{6}$/.test(code || '')) return { error: 'El código son 6 dígitos.', status: 400 }
 
-  const body = await c.req.json().catch(() => ({}))
-  if (!/^\d{6}$/.test(body.code || '')) {
-    return c.json({ error: 'El código son 6 dígitos.' }, 400)
-  }
-
+  const db = c.env.DB
   const user = c.get('user')
-  const invite = await c.env.DB
+  const invite = await db
     .prepare('SELECT * FROM family_invite WHERE codeHash = ? AND usedAt IS NULL')
-    .bind(await sha256Hex(body.code))
+    .bind(await sha256Hex(code))
     .first()
 
   if (!invite || invite.expiresAt < Date.now()) {
-    return c.json({ error: 'Código inválido o vencido.' }, 401)
+    return { error: 'Código inválido o vencido.', status: 401 }
   }
   if (invite.familyId === c.get('familyId')) {
-    return c.json({ error: 'Ya perteneces a esa familia.' }, 400)
-  }
-
-  const members = await c.env.DB
-    .prepare('SELECT COUNT(*) AS n FROM family_member WHERE familyId = ?')
-    .bind(invite.familyId)
-    .first()
-  if ((members?.n ?? 0) >= MAX_GUARDIANS) {
-    return c.json({ error: `Esa familia ya tiene ${MAX_GUARDIANS} tutores.` }, 409)
+    return { error: 'Ya perteneces a esa familia.', status: 400 }
   }
 
   const from = c.get('familyId')
   const to = invite.familyId
 
-  // Whatever this adult built on their own comes with them. Refusing would
-  // force them to delete real children just to accept an invitation.
-  const mine = await c.env.DB
-    .prepare("SELECT COUNT(*) AS n FROM user WHERE familyId = ? AND role = 'kid'")
-    .bind(from)
-    .first()
-  const theirs = await c.env.DB
-    .prepare("SELECT COUNT(*) AS n FROM user WHERE familyId = ? AND role = 'kid'")
-    .bind(to)
-    .first()
+  const names = (r) => (r.results ?? []).map(x => x.name)
+  const [guardians, theirKids, yourKids, others] = await db.batch([
+    db.prepare(`SELECT u.name FROM family_member m JOIN user u ON u.id = m.userId
+                WHERE m.familyId = ? ORDER BY m.joinedAt`).bind(to),
+    db.prepare("SELECT name FROM user WHERE familyId = ? AND role = 'kid' ORDER BY createdAt").bind(to),
+    db.prepare("SELECT name FROM user WHERE familyId = ? AND role = 'kid' ORDER BY createdAt").bind(from),
+    db.prepare(`SELECT u.name FROM family_member m JOIN user u ON u.id = m.userId
+                WHERE m.familyId = ? AND m.userId != ? ORDER BY m.joinedAt`).bind(from, user.id),
+  ])
 
-  const movingKids = mine?.n ?? 0
-  if (movingKids + (theirs?.n ?? 0) > MAX_CHILDREN) {
-    return c.json({
-      error: `Juntas, las dos familias pasarían de ${MAX_CHILDREN} hijos.`,
-    }, 409)
+  if ((guardians.results?.length ?? 0) >= MAX_GUARDIANS) {
+    return { error: `Esa familia ya tiene ${MAX_GUARDIANS} tutores.`, status: 409 }
   }
 
   // Only this adult moves if the old family still has other guardians —
-  // dragging shared children out from under them would be wrong.
-  const others = await c.env.DB
-    .prepare('SELECT COUNT(*) AS n FROM family_member WHERE familyId = ? AND userId != ?')
-    .bind(from, user.id)
-    .first()
-  const merging = (others?.n ?? 0) === 0
+  // dragging shared children out from under them would be wrong. Whatever they
+  // built alone comes with them, instead of forcing them to delete real kids.
+  const merging = (others.results?.length ?? 0) === 0
+  const movingKids = merging ? names(yourKids) : []
 
+  if (movingKids.length + (theirKids.results?.length ?? 0) > MAX_CHILDREN) {
+    return { error: `Juntas, las dos familias pasarían de ${MAX_CHILDREN} hijos.`, status: 409 }
+  }
+
+  return {
+    invite,
+    from,
+    to,
+    merging,
+    preview: {
+      guardians: names(guardians),
+      theirKids: names(theirKids),
+      movingKids,
+      yourKids: names(yourKids),
+      stayingBehind: names(others),
+      merging,
+    },
+  }
+}
+
+// One bucket for both: the preview must not be a faster way to test codes.
+const joinLimit = rateLimit({ name: 'guardians-join', windowSec: 300, max: 5 })
+
+/**
+ * What joining with this code would do, changing nothing. It shows the inviting
+ * family's first names — to the person holding their invite, which is the point:
+ * a mistyped code must not land someone in a stranger's family unnoticed.
+ */
+api.post('/guardians/join/preview', joinLimit, async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+
+  const body = await c.req.json().catch(() => ({}))
+  const plan = await planJoin(c, body.code)
+  if (plan.error) return c.json({ error: plan.error }, plan.status)
+
+  return c.json(plan.preview)
+})
+
+/** An adult with their own account joins an existing family. */
+api.post('/guardians/join', joinLimit, async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+
+  const body = await c.req.json().catch(() => ({}))
+  const plan = await planJoin(c, body.code)
+  if (plan.error) return c.json({ error: plan.error }, plan.status)
+
+  const { invite, from, to, merging } = plan
+  const user = c.get('user')
   const ts = Date.now()
+
   const steps = [
     c.env.DB.prepare('INSERT INTO family_member (familyId,userId,role,joinedAt) VALUES (?,?,?,?)')
       .bind(to, user.id, 'guardian', ts),
@@ -760,14 +792,13 @@ api.post(
   // D1 has no interactive transactions; batch is what keeps this atomic.
   await c.env.DB.batch(steps)
 
-    return c.json({
-      ok: true,
-      familyId: to,
-      merged: merging,
-      movedChildren: merging ? movingKids : 0,
-    })
-  },
-)
+  return c.json({
+    ok: true,
+    familyId: to,
+    merged: merging,
+    movedChildren: plan.preview.movingKids.length,
+  })
+})
 
 function generateSixDigits () {
   const limit = 4294967296 - (4294967296 % 1000000)

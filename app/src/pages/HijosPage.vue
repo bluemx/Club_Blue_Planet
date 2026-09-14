@@ -19,17 +19,17 @@
         en vez de volver a crearlos. Si tú ya agregaste alguno, se va contigo.
       </div>
 
-      <CodeInput v-model="joinCode" @complete="join" />
+      <CodeInput v-model="joinCode" @complete="start" />
 
       <p v-if="joinError" class="bp-auth-error">{{ joinError }}</p>
 
       <button
         type="button"
         class="bp-submit q-mt-md"
-        :disabled="joinCode.length < 6 || joining"
-        @click="join"
+        :disabled="joinCode.length < 6 || checking || joining"
+        @click="start"
       >
-        <OrnIcon /> {{ joining ? 'Uniéndome…' : 'Unirme a su familia' }} <OrnIcon />
+        <OrnIcon /> {{ checking ? 'Revisando…' : 'Unirme a su familia' }} <OrnIcon />
       </button>
 
       <p class="bp-hint">
@@ -104,6 +104,8 @@
       </template>
     </div>
 
+    <JoinFamilyDialog v-model="confirmOpen" :plan="plan" :loading="joining" @confirm="confirm" />
+
     <q-dialog v-model="removeOpen">
       <div class="bp-confirm">
         <h2 class="bp-confirm-title">¿Eliminar a {{ removing?.name }}?</h2>
@@ -131,10 +133,12 @@ import { useRouter } from 'vue-router'
 import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import CodeInput from '@/components/CodeInput.vue'
+import JoinFamilyDialog from '@/components/JoinFamilyDialog.vue'
 import { OrnIcon } from '@/components/authIcons'
 import { apiFetch } from '@/lib/auth'
 import { invalidateSession } from '@/lib/session'
-import { summary, joinFamily, useResource } from '@/lib/api'
+import { summary, useResource } from '@/lib/api'
+import { useJoinFamily } from '@/lib/joinFamily'
 
 const router = useRouter()
 
@@ -148,28 +152,10 @@ const name = ref('')
 const saving = ref(false)
 const addError = ref('')
 
-const joinCode = ref('')
-const joining = ref(false)
-const joinError = ref('')
-
-async function join () {
-  if (joinCode.value.length < 6 || joining.value) return
-
-  joining.value = true
-  joinError.value = ''
-
-  try {
-    const res = await joinFamily(joinCode.value)
-    invalidateSession()   // this account now acts in another family
-    if (res.merged && res.movedChildren) await reload()
-    else router.push('/')
-  } catch (err) {
-    joinError.value = err.data?.hint || err.data?.error || 'No se pudo unir.'
-    joinCode.value = ''
-  } finally {
-    joining.value = false
-  }
-}
+// Preview → confirm → join. If their own kids came along, stay and show them here.
+const {
+  joinCode, checking, joining, joinError, plan, confirmOpen, start, confirm,
+} = useJoinFamily((res) => (res.merged && res.movedChildren ? reload() : router.push('/')))
 
 const removeOpen = ref(false)
 const removing = ref(null)

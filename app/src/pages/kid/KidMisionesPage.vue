@@ -15,7 +15,7 @@
       >
         <q-tab name="todas" label="Todas" />
         <q-tab name="pendiente" label="Por hacer" />
-        <q-tab name="revision" label="En revisión" />
+        <q-tab ref="revisionTab" name="revision" label="En revisión" />
         <q-tab name="lista" label="Listas" />
       </q-tabs>
 
@@ -23,9 +23,11 @@
       <p v-if="error" class="bp-auth-error">{{ error }}</p>
 
       <template v-if="!loading && !error">
+        <TransitionGroup tag="div" name="bp-fly">
         <MissionRow
           v-for="a in visible"
           :key="a.id"
+          :ref="(el) => setRow(a.id, el)"
           :title="a.title"
           :subtitle="a.subtitle"
           :icon="a.icon"
@@ -48,6 +50,7 @@
             </span>
           </template>
         </MissionRow>
+        </TransitionGroup>
 
         <!-- capture opens the camera straight away on a phone -->
         <input
@@ -75,6 +78,7 @@ import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { assignments, uploadEvidence, useResource } from '@/lib/api'
 import { onNotification } from '@/lib/notifications'
+import { flyTo } from '@/lib/fly'
 
 const STATE = {
   pendiente: { label: 'Por hacer', icon: 'radio_button_unchecked' },
@@ -98,6 +102,13 @@ const visible = computed(() =>
   filter.value === 'todas' ? list.value : list.value.filter(a => a.status === filter.value)
 )
 
+const rows = new Map()
+function setRow (id, comp) {
+  if (comp?.$el) rows.set(id, comp.$el)
+  else rows.delete(id)
+}
+const revisionTab = ref(null)
+
 const fileInput = ref(null)
 const target = ref(null)
 const uploadError = ref('')
@@ -111,14 +122,18 @@ function pick (a) {
 
 async function upload (event) {
   const file = event.target.files?.[0]
-  if (!file || !target.value) return
+  const a = target.value
+  if (!file || !a) return
 
-  busyId.value = target.value.id
+  busyId.value = a.id
   uploadError.value = ''
 
   try {
-    await uploadEvidence(target.value.id, file)
-    await reload()
+    await uploadEvidence(a.id, file)
+    // In place, like the parent's approvals: the mission heads for "En
+    // revisión" instead of the whole list reloading under the kid's finger.
+    flyTo(rows.get(a.id), revisionTab.value?.$el)
+    Object.assign(a, { status: 'revision', hasPhoto: 1, reportedAt: Date.now() })
   } catch (err) {
     uploadError.value = err.data?.error || 'No se pudo subir la foto.'
   } finally {
