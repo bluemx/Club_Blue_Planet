@@ -1392,3 +1392,12 @@ a.bp-submit {
   .bp-submit:hover:not(:disabled),
   .bp-submit:active:not(:disabled) { transform: none; }
 }
+
+// iOS Safari zooms into any focused field whose text is under 16px, and does
+// not zoom back out. Quasar's fields are 14px; at 16px the page stays put.
+// (Not maximum-scale=1 in the viewport: that also blocks pinch-zoom on Android.)
+.q-field__native,
+.q-field__input,
+.q-field textarea {
+  font-size: 16px;
+}
