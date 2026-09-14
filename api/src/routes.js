@@ -517,7 +517,8 @@ api.get('/badges', async (c) => {
 
 // --------------------------------------------------------------- evidence
 
-const MAX_PHOTO_BYTES = 8 * 1024 * 1024 // 8 MB — a phone photo, not a video
+// The app sends ≤800px WebP/JPEG (tens of KB); this only stops anything else.
+const MAX_PHOTO_BYTES = 1024 * 1024 // 1 MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
 
 /**
@@ -547,7 +548,7 @@ api.post('/assignments/:id/evidence', async (c) => {
   const body = await c.req.arrayBuffer()
   if (!body.byteLength) return c.json({ error: 'La foto llegó vacía.' }, 400)
   if (body.byteLength > MAX_PHOTO_BYTES) {
-    return c.json({ error: 'La foto pesa más de 8 MB.' }, 413)
+    return c.json({ error: 'La foto pesa más de 1 MB.' }, 413)
   }
 
   // Keyed family/child/assignment so deleting a child (or a whole family) is a

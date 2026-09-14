@@ -158,8 +158,8 @@ const props = defineProps({
 })
 const emit = defineEmits(['update:modelValue'])
 
-// px — evidence is looked at on a phone or in a dialog; more is weight, not detail
-const MAX_SIDE = 1280
+// px, longest side — evidence is looked at on a phone or in a dialog; more is weight, not detail
+const MAX_SIDE = 800
 
 // ------------------------------------------------------------------ stickers
 
