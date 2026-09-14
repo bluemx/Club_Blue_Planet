@@ -1,6 +1,6 @@
 <template>
   <q-page class="bp-gradient-bg bp-page-pad">
-    <PageHeader title="Perfil" :subtitle="['Administra tu cuenta y tu familia.']" />
+    <PageHeader title="Cuenta" :subtitle="['Administra tu cuenta y tu familia.']" />
 
     <div class="bp-sheet">
       <div class="bp-row q-mb-md">

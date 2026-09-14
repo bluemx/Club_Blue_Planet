@@ -72,18 +72,6 @@
       </g>
     </g>
 
-    <!-- Estadísticas -->
-    <g v-else-if="name === 'stats'" class="bp-ico-g">
-      <path d="M8 40h32" stroke="var(--bp-ink)" stroke-width="3.2" stroke-linecap="round" />
-      <rect class="bp-ico-bar bp-ico-bar--1" x="10.5" y="27" width="7.5" height="11" rx="2.5" fill="var(--bp-fill)" stroke="var(--bp-ink)" stroke-width="2.8" />
-      <rect class="bp-ico-bar bp-ico-bar--2" x="20.5" y="21" width="7.5" height="17" rx="2.5" fill="var(--bp-pale)" stroke="var(--bp-ink)" stroke-width="2.8" />
-      <rect class="bp-ico-bar bp-ico-bar--3" x="30.5" y="15" width="7.5" height="23" rx="2.5" fill="var(--bp-fill)" stroke="var(--bp-ink)" stroke-width="2.8" />
-      <g class="bp-ico-arrow">
-        <path d="M12 19.5 22 12l6 4.5L38 7" stroke="var(--bp-warm)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M31.5 6.5H39v7.5" stroke="var(--bp-warm)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
-      </g>
-    </g>
-
     <!-- Perfil -->
     <g v-else-if="name === 'profile'" class="bp-ico-g">
       <circle cx="24" cy="17" r="8.5" fill="var(--bp-fill)" stroke="var(--bp-ink)" stroke-width="3.2" />
