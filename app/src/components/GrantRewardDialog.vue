@@ -12,17 +12,19 @@
           :key="child.id"
           type="button"
           class="bp-grant-child"
-          :class="{ 'is-on': picked === child.id, 'is-short': !canAfford(child) }"
-          :disabled="!canAfford(child)"
+          :class="{ 'is-on': picked === child.id, 'is-short': !canGive(child) }"
+          :disabled="!canGive(child)"
           @click="picked = child.id"
         >
           <KidAvatar :avatar="child.avatar" :seed="child.id" :size="38" />
           <span class="col text-left">
             <span class="bp-row-title">{{ child.name }}</span>
             <span class="bp-row-subtitle">
-              {{ canAfford(child)
-                ? `${child.points} pts · le quedarían ${child.points - reward.points}`
-                : `${child.points} pts · le faltan ${reward.points - child.points}` }}
+              {{ usedUp(child)
+                ? 'Ya la canjeó'
+                : canAfford(child)
+                  ? `${child.points} pts · le quedarían ${child.points - reward.points}`
+                  : `${child.points} pts · le faltan ${reward.points - child.points}` }}
             </span>
           </span>
           <q-icon v-if="picked === child.id" name="check_circle" color="secondary" size="20px" />
@@ -67,11 +69,15 @@ const saving = ref(false)
 const error = ref('')
 
 const canAfford = (child) => child.points >= (props.reward?.points ?? 0)
+// The parent's per-child limit, counted by the API (asked for or handed over).
+const usedUp = (child) => props.reward?.maxPerChild != null &&
+  (props.reward.usedBy?.[child.id] ?? 0) >= props.reward.maxPerChild
+const canGive = (child) => canAfford(child) && !usedUp(child)
 
 function reset () {
   error.value = ''
   // With a single child there is nothing to choose; preselect if they can pay.
-  const affordable = props.children.filter(canAfford)
+  const affordable = props.children.filter(canGive)
   picked.value = affordable.length === 1 ? affordable[0].id : null
 }
 

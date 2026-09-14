@@ -29,7 +29,7 @@
           v-for="r in list"
           :key="r.id"
           class="bp-row"
-          :class="{ 'bp-row--locked': r.points > points }"
+          :class="{ 'bp-row--locked': r.points > points || usedUp(r) }"
         >
           <div class="bp-row-badge" :class="r.color">
             <q-icon :name="r.icon" />
@@ -37,17 +37,23 @@
           <div class="col">
             <div class="bp-row-title">{{ r.title }}</div>
             <div class="bp-row-subtitle">
-              {{ r.points > points ? `Te faltan ${r.points - points} puntos` : '¡Ya puedes canjearla!' }}
+              <template v-if="usedUp(r)">Ya la canjeaste. Pídele a tus papás una nueva.</template>
+              <template v-else>
+                {{ r.points > points ? `Te faltan ${r.points - points} puntos` : '¡Ya puedes canjearla!' }}
+                <template v-if="left(r) > 1 && left(r) < Infinity"> · Te quedan {{ left(r) }}</template>
+              </template>
             </div>
             <q-linear-progress
+              v-if="!usedUp(r)"
               rounded size="6px" class="q-mt-xs"
               :value="Math.min(points / r.points, 1)"
               :color="r.points > points ? 'blue-3' : 'secondary'"
               track-color="blue-1"
             />
           </div>
+          <span v-if="usedUp(r)" class="bp-used"><q-icon name="check_circle" size="14px" /> Canjeada</span>
           <q-btn
-            v-if="r.points <= points"
+            v-else-if="r.points <= points"
             unelevated rounded no-caps size="sm"
             color="primary" label="Canjear"
             :loading="busyId === r.id"
@@ -72,11 +78,15 @@ import { onNotification } from '@/lib/notifications'
 const busyId = ref(null)
 const message = ref('')
 
-const { data: rewardData, loading, error } = useResource(rewards)
+const { data: rewardData, loading, error, reload: reloadRewards } = useResource(rewards)
 const { data: summaryData, reload: reloadSummary } = useResource(summary)
 
 const list = computed(() => rewardData.value?.rewards ?? [])
 const points = computed(() => summaryData.value?.totals?.points ?? 0)
+
+// Times left under the parent's limit; no limit = Infinity.
+const left = (r) => (r.maxPerChild == null ? Infinity : r.maxPerChild - (r.used ?? 0))
+const usedUp = (r) => left(r) <= 0
 
 // A delivery, a rejection or a revert all move the balance on screen.
 const off = onNotification((n) => {
@@ -90,7 +100,7 @@ async function redeem (r) {
   try {
     await redeemReward(r.id)
     message.value = `¡Pediste "${r.title}"! Tus papás te la entregarán.`
-    await reloadSummary()
+    await Promise.all([reloadSummary(), reloadRewards({ quiet: true })])
   } catch (err) {
     message.value = err.data?.error || 'No se pudo canjear.'
   } finally {
@@ -134,6 +144,20 @@ async function redeem (r) {
 
 .bp-row--locked {
   opacity: .7;
+}
+
+.bp-used {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #E3FBEE;
+  color: #16A66A;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .bp-note-ok {
