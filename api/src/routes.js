@@ -279,11 +279,27 @@ api.patch('/assignments/:id', async (c) => {
 // ----------------------------------------------------------------- rewards
 
 api.get('/rewards', async (c) => {
-  const { results } = await c.env.DB
-    .prepare('SELECT * FROM reward WHERE familyId IS NULL OR familyId = ? ORDER BY points')
-    .bind(c.get('familyId'))
-    .all()
-  return c.json({ rewards: results ?? [] })
+  const familyId = c.get('familyId')
+  const [{ results }, { results: uses }] = await c.env.DB.batch([
+    c.env.DB
+      .prepare('SELECT * FROM reward WHERE familyId IS NULL OR familyId = ? ORDER BY points')
+      .bind(familyId),
+    // What counts against a limit: asked for or handed over, not rejected.
+    c.env.DB
+      .prepare(`SELECT rewardId, childId, COUNT(*) AS n FROM redemption
+                WHERE familyId = ? AND status IN ('pedida','entregada') GROUP BY rewardId, childId`)
+      .bind(familyId),
+  ])
+
+  // A kid sees their own count; a parent sees everyone's, to grant or not.
+  const kidId = c.get('isKid') ? c.get('user').id : null
+  const rewards = (results ?? []).map((r) => {
+    const mine = (uses ?? []).filter(u => u.rewardId === r.id)
+    return kidId
+      ? { ...r, used: mine.find(u => u.childId === kidId)?.n ?? 0 }
+      : { ...r, usedBy: Object.fromEntries(mine.map(u => [u.childId, u.n])) }
+  })
+  return c.json({ rewards })
 })
 
 api.post('/rewards', async (c) => {
@@ -293,6 +309,13 @@ api.post('/rewards', async (c) => {
   const title = (body.title || '').trim()
   if (!title) return c.json({ error: 'Falta el título.' }, 400)
 
+  // Times each child may redeem it: 1 unless the parent says otherwise;
+  // null = no limit. Used up, the parent creates a new one (same title is fine).
+  const maxPerChild = body.maxPerChild === undefined ? 1 : body.maxPerChild
+  if (maxPerChild !== null && !(Number.isInteger(maxPerChild) && maxPerChild >= 1 && maxPerChild <= 99)) {
+    return c.json({ error: 'El límite debe ser entre 1 y 99, o sin límite.' }, 400)
+  }
+
   const reward = {
     id: crypto.randomUUID(),
     familyId: c.get('familyId'),
@@ -301,12 +324,13 @@ api.post('/rewards', async (c) => {
     icon: body.icon || 'redeem',
     color: body.color || 'blue',
     points: Number.isFinite(body.points) ? body.points : 100,
+    maxPerChild,
     createdAt: now(),
   }
 
   await c.env.DB
-    .prepare('INSERT INTO reward (id,familyId,title,subtitle,icon,color,points,createdAt) VALUES (?,?,?,?,?,?,?,?)')
-    .bind(reward.id, reward.familyId, reward.title, reward.subtitle, reward.icon, reward.color, reward.points, reward.createdAt)
+    .prepare('INSERT INTO reward (id,familyId,title,subtitle,icon,color,points,maxPerChild,createdAt) VALUES (?,?,?,?,?,?,?,?,?)')
+    .bind(reward.id, reward.familyId, reward.title, reward.subtitle, reward.icon, reward.color, reward.points, reward.maxPerChild, reward.createdAt)
     .run()
 
   return c.json(reward, 201)
@@ -376,11 +400,28 @@ api.post('/redemptions', async (c) => {
   if (!childId || !body.rewardId) return c.json({ error: 'Falta el premio o el hijo.' }, 400)
 
   const reward = await c.env.DB
-    .prepare('SELECT id, title, points, icon, color FROM reward WHERE id = ? AND (familyId IS NULL OR familyId = ?)')
+    .prepare('SELECT id, title, points, icon, color, maxPerChild FROM reward WHERE id = ? AND (familyId IS NULL OR familyId = ?)')
     .bind(body.rewardId, familyId)
     .first()
 
   if (!reward) return c.json({ error: 'Ese premio no existe.' }, 404)
+
+  // ponytail: checked, then inserted — two requests for the same child in the
+  // same instant could both pass (the balance check has the same window). A
+  // conditional INSERT … SELECT … WHERE count < max closes it if it ever matters.
+  if (reward.maxPerChild != null) {
+    const used = await c.env.DB
+      .prepare("SELECT COUNT(*) AS n FROM redemption WHERE rewardId = ? AND childId = ? AND status IN ('pedida','entregada')")
+      .bind(reward.id, childId)
+      .first()
+    if ((used?.n ?? 0) >= reward.maxPerChild) {
+      return c.json({
+        error: c.get('isKid')
+          ? 'Ya la canjeaste. Pídele a tus papás que creen otra.'
+          : 'Ese hijo ya la canjeó las veces permitidas. Crea otra recompensa para dársela de nuevo.',
+      }, 409)
+    }
+  }
 
   const balance = await balanceFor(c.env.DB, childId)
   if (balance < reward.points) {

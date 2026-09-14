@@ -19,7 +19,7 @@
           v-for="r in list"
           :key="r.id"
           :title="r.title"
-          :subtitle="r.subtitle"
+          :subtitle="[r.subtitle, limitLabel(r), askedLabel(r)].filter(Boolean).join(' · ')"
           :icon="r.icon"
           :color="r.color"
           :points="r.points"
@@ -209,7 +209,9 @@
       v-model="grantOpen"
       :reward="picked"
       :children="children"
+      :pending="pending.filter(p => p.rewardId === picked?.id)"
       @granted="onGranted"
+      @deliver="deliver"
     />
 
     <!-- create reward -->
@@ -239,6 +241,27 @@
             </span>
             <q-btn round flat dense icon="add" color="primary" @click="bump(50)" />
           </div>
+
+          <div class="bp-field-label q-mt-md">¿Cuántas veces puede canjearla cada hijo?</div>
+          <div class="bp-limit" role="radiogroup" aria-label="Veces por hijo">
+            <button
+              v-for="opt in LIMITS"
+              :key="String(opt.value)"
+              type="button"
+              role="radio"
+              class="bp-limit-opt"
+              :class="{ 'is-on': maxPerChild === opt.value }"
+              :aria-checked="maxPerChild === opt.value"
+              @click="maxPerChild = opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+          <p class="bp-limit-hint">
+            {{ maxPerChild === null
+              ? 'Tus hijos podrán canjearla cuantas veces junten los puntos.'
+              : `Cuando un hijo la canjee ${maxPerChild === 1 ? 'una vez' : `${maxPerChild} veces`}, ya no podrá pedirla. Para dársela otra vez, crea una nueva.` }}
+          </p>
 
           <p v-if="createError" class="bp-auth-error q-mt-sm">{{ createError }}</p>
         </div>
@@ -279,6 +302,13 @@ const {
   data: pendingData, loading: loadingPending, reload: reloadPending,
 } = useResource(() => redemptions({ status: 'pedida', limit: 50 }))
 const pending = computed(() => pendingData.value?.redemptions ?? [])
+
+// "Loberto la pidió" on the reward itself, so the list says who's waiting.
+function askedLabel (r) {
+  const names = [...new Set(pending.value.filter(p => p.rewardId === r.id).map(p => p.childName))]
+  if (!names.length) return ''
+  return names.length === 1 ? `${names[0]} la pidió` : `${names.slice(0, -1).join(', ')} y ${names.at(-1)} la pidieron`
+}
 
 // A kid asking for a reward shows up here without a reload.
 const off = onNotification((n) => {
@@ -455,6 +485,16 @@ async function doRevert () {
 const createOpen = ref(false)
 const title = ref('')
 const points = ref(200)
+// Per child; null = no limit. 1 by default: used up, the parent makes a new one.
+const LIMITS = [
+  { value: 1, label: '1 vez' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 5, label: '5' },
+  { value: null, label: 'Sin límite' },
+]
+const maxPerChild = ref(1)
+const limitLabel = (r) => (r.maxPerChild == null ? '' : r.maxPerChild === 1 ? '1 vez por hijo' : `${r.maxPerChild} veces por hijo`)
 const saving = ref(false)
 const createError = ref('')
 
@@ -467,10 +507,11 @@ async function save () {
   try {
     await apiFetch('/api/rewards', {
       method: 'POST',
-      body: JSON.stringify({ title: title.value.trim(), points: points.value, icon: 'redeem', color: 'blue' }),
+      body: JSON.stringify({ title: title.value.trim(), points: points.value, maxPerChild: maxPerChild.value, icon: 'redeem', color: 'blue' }),
     })
     title.value = ''
     points.value = 200
+    maxPerChild.value = 1
     createOpen.value = false
     await reload({ quiet: true })
   } catch (err) {
@@ -482,6 +523,40 @@ async function save () {
 </script>
 
 <style scoped>
+.bp-limit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bp-limit-opt {
+  flex: 1 0 auto;
+  min-width: 48px;
+  padding: 8px 12px;
+  border: 1.5px solid #E1ECFA;
+  border-radius: 999px;
+  background: #fff;
+  color: #55708F;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.bp-limit-opt.is-on {
+  border-color: #1467E4;
+  background: #EAF2FF;
+  color: #1467E4;
+}
+
+.bp-limit-hint {
+  margin: 8px 2px 0;
+  color: #6F86A8;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 .bp-assign {
   display: flex;
   flex-direction: column;
