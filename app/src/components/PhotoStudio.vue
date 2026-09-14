@@ -332,9 +332,17 @@ function retake () {
 }
 
 // The photo box keeps the shot's shape and fits the space above the tray.
-const photoStyle = computed(() => photo.value && {
-  aspectRatio: `${photo.value.w} / ${photo.value.h}`,
-  width: `min(100%, calc((100dvh - 330px) * ${(photo.value.w / photo.value.h).toFixed(4)}))`,
+// Both sides explicit, not aspect-ratio: iOS Safari sizes aspect-ratio grid
+// cells wrong (it piled up the avatar editor's tiles).
+const photoStyle = computed(() => {
+  if (!photo.value) return null
+  const r = (photo.value.w / photo.value.h).toFixed(4)
+  const fitW = 'calc(100vw - 32px)' // the view's side padding
+  const fitH = 'calc(100dvh - 330px)' // header + tray
+  return {
+    width: `min(${fitW}, calc(${fitH} * ${r}))`,
+    height: `min(calc(${fitW} / ${r}), ${fitH})`,
+  }
 })
 
 // -------------------------------------------------------- placing stickers
