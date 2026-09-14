@@ -226,7 +226,7 @@ api.patch('/assignments/:id', async (c) => {
   const status = body.status
 
   const row = await c.env.DB
-    .prepare(`SELECT a.*, m.title FROM assignment a JOIN mission m ON m.id = a.missionId
+    .prepare(`SELECT a.*, m.title, m.icon, m.color FROM assignment a JOIN mission m ON m.id = a.missionId
               WHERE a.id = ? AND a.familyId = ?`)
     .bind(id, c.get('familyId'))
     .first()
@@ -266,6 +266,9 @@ api.patch('/assignments/:id', async (c) => {
       title: `¡Misión aprobada! +${row.points} puntos`,
       body: row.title,
       link: '/kid/misiones',
+      // The kid's app celebrates it full-screen with the mission's own art.
+      icon: row.icon,
+      color: row.color,
     }))
   }
   await c.env.DB.batch(steps)

@@ -225,11 +225,13 @@ async function save () {
   padding: 2px;
 }
 
+/* Square by padding, not aspect-ratio: iOS Safari sized the grid rows from
+   aspect-ratio too short and the tiles piled on top of each other. The
+   contents are placed over the padding box. */
 .bp-av-option {
-  aspect-ratio: 1;
-  display: grid;
-  place-items: center;
-  padding: 0;
+  position: relative;
+  height: 0;
+  padding: 0 0 calc(100% - 4px); /* minus the 2px borders */
   border: 2px solid transparent;
   border-radius: 18px;
   background: #F4F8FE;
@@ -238,14 +240,15 @@ async function save () {
   transition: transform .15s, border-color .15s;
 }
 
-.bp-av-option img {
+.bp-av-option > img,
+.bp-av-none {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
 }
 
 .bp-av-option:active { transform: scale(.94); }
-
-.bp-av-option { position: relative; }
 
 .bp-av-option.is-locked img {
   filter: grayscale(1);
@@ -288,13 +291,15 @@ async function save () {
 }
 
 .bp-av-swatch {
-  width: 62%;
-  height: 62%;
+  position: absolute;
+  inset: 19%; /* a 62% circle, centred */
   border-radius: 50%;
   box-shadow: inset 0 -3px 6px rgba(0, 0, 0, .12), 0 2px 4px rgba(11, 43, 107, .12);
 }
 
 .bp-av-none {
+  display: grid;
+  place-items: center;
   color: #A9BCD6;
 }
 

@@ -59,5 +59,31 @@ export default defineRouter((/* { store, ssrContext } */) => {
     return true
   })
 
+  /*
+   * After a deploy, a tab that's still open asks for screens by their old
+   * file names. Those are gone (the server answers with the HTML page), the
+   * import fails, and the button just does nothing. Load the new version
+   * straight onto the screen that was asked for. Once per minute at most, so a
+   * real outage can't turn into a reload loop.
+   */
+  const STALE = /dynamically imported module|Importing a module script failed|error loading dynamically imported module/i
+  const reloadInto = (fullPath) => {
+    try {
+      const last = Number(sessionStorage.getItem('bp-stale-reload') || 0)
+      if (Date.now() - last < 60_000) return false
+      sessionStorage.setItem('bp-stale-reload', String(Date.now()))
+    } catch { /* private mode: reload anyway */ }
+    if (fullPath) window.location.hash = fullPath
+    window.location.reload()
+    return true
+  }
+  Router.onError((err, to) => {
+    if (STALE.test(err?.message ?? '')) reloadInto(to?.fullPath)
+  })
+  // Same thing when Vite fails to preload a chunk's dependencies.
+  window.addEventListener('vite:preloadError', (event) => {
+    if (reloadInto()) event.preventDefault()
+  })
+
   return Router
 })

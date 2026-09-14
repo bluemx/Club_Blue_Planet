@@ -37,7 +37,7 @@ import AuthShell from '@/components/AuthShell.vue'
 import CodeInput from '@/components/CodeInput.vue'
 import { OrnIcon } from '@/components/authIcons'
 import { apiFetch } from '@/lib/auth'
-import { invalidateSession } from '@/lib/session'
+import { enterApp, ENTER_FAILED } from '@/lib/session'
 
 const router = useRouter()
 const code = ref('')
@@ -56,15 +56,16 @@ async function onComplete (value) {
       method: 'POST',
       body: JSON.stringify({ code: value }),
     })
-    invalidateSession()
-    router.push('/kid')
   } catch (err) {
     error.value = err.status === 429
       ? 'Muchos intentos seguidos. Espera unos minutos.'
       : 'Ese código no es válido. Revísalo con tus papás.'
-  } finally {
     loading.value = false
+    return
   }
+  // The code worked; if the app can't open, say so instead of doing nothing.
+  if (!(await enterApp(router, '/kid'))) error.value = ENTER_FAILED
+  loading.value = false
 }
 
 watch(code, () => { error.value = '' })

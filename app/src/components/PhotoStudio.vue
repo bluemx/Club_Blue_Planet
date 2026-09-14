@@ -261,11 +261,14 @@ async function startCamera () {
     })
     await nextTick()
     if (!video.value) return stopCamera() // closed while the permission prompt was up
-    video.value.srcObject = stream
     // Ready once frames have a size; play() can stay pending (e.g. a tab in
-    // the background) and must not hold the shutter hostage.
-    video.value.onloadedmetadata = () => { ready.value = true }
-    video.value.play().catch(() => {})
+    // the background) and must not hold the shutter hostage. The handler goes
+    // on first, and readyState covers a camera that answered before it.
+    const v = video.value
+    v.onloadedmetadata = () => { ready.value = true }
+    v.srcObject = stream
+    v.play().catch(() => {})
+    if (v.readyState >= 1) ready.value = true
     // Labels and the full list only show up once permission is granted.
     const devices = await navigator.mediaDevices.enumerateDevices()
     canFlip.value = devices.filter(d => d.kind === 'videoinput').length > 1
@@ -329,9 +332,17 @@ function retake () {
 }
 
 // The photo box keeps the shot's shape and fits the space above the tray.
-const photoStyle = computed(() => photo.value && {
-  aspectRatio: `${photo.value.w} / ${photo.value.h}`,
-  width: `min(100%, calc((100dvh - 330px) * ${(photo.value.w / photo.value.h).toFixed(4)}))`,
+// Both sides explicit, not aspect-ratio: iOS Safari sizes aspect-ratio grid
+// cells wrong (it piled up the avatar editor's tiles).
+const photoStyle = computed(() => {
+  if (!photo.value) return null
+  const r = (photo.value.w / photo.value.h).toFixed(4)
+  const fitW = 'calc(100vw - 32px)' // the view's side padding
+  const fitH = 'calc(100dvh - 330px)' // header + tray
+  return {
+    width: `min(${fitW}, calc(${fitH} * ${r}))`,
+    height: `min(calc(${fitW} / ${r}), ${fitH})`,
+  }
 })
 
 // -------------------------------------------------------- placing stickers
@@ -513,8 +524,14 @@ onBeforeUnmount(reset)
   padding: 0 16px;
 }
 
+/* Placed, not in flow: a phone camera's tall frames (1080×1920) made iOS
+   Safari grow the video past its box and over the shutter. */
 .bp-studio-video {
-  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 16px;
+  z-index: 0;
+  width: calc(100% - 32px);
   height: 100%;
   border-radius: 24px;
   background: #000;
@@ -535,6 +552,13 @@ onBeforeUnmount(reset)
 }
 
 .bp-studio-nocam .bp-submit { width: auto; padding: 0 22px; }
+
+/* Above the video: iOS paints video on its own layer. */
+.bp-studio-top,
+.bp-studio-controls {
+  position: relative;
+  z-index: 2;
+}
 
 .bp-studio-controls {
   display: flex;

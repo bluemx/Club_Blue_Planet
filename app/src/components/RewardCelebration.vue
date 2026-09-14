@@ -33,6 +33,7 @@
         </div>
 
         <div class="bp-cele-copy">
+          <div v-if="current.points" class="bp-cele-points"><q-icon name="star" /> +{{ current.points }} puntos</div>
           <h2 :id="`${current.id}-title`" class="bp-cele-title">{{ current.title }}</h2>
           <p v-if="current.detail" class="bp-cele-detail">{{ current.detail }}</p>
           <button ref="closeBtn" type="button" class="bp-cele-btn">¡Genial!</button>
@@ -442,4 +443,30 @@ onBeforeUnmount(() => {
 .bp-cele--still .bp-cele-detail,
 .bp-cele--still .bp-cele-btn { opacity: 1; transform: none; }
 .bp-cele--still .bp-cele-glow { opacity: .6; transform: none; }
+
+/* Points earned: a gold pill that lands with the words. */
+.bp-cele-points {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #FFE27A, #F5B400);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 -2px 0 rgba(150, 100, 0, .3), 0 12px 24px -10px rgba(245, 180, 0, .8);
+  color: #3A2A00;
+  font-size: 26px;
+  font-weight: 900;
+  animation: bp-cele-points .55s cubic-bezier(.34, 1.56, .64, 1) 1.5s both;
+}
+
+.bp-cele-points .q-icon { color: #fff; filter: drop-shadow(0 1px 1px rgba(150, 100, 0, .5)); }
+
+@keyframes bp-cele-points {
+  0%   { opacity: 0; transform: scale(.3) rotate(-8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+.bp-cele--still .bp-cele-points { animation: none; }
+
 </style>
