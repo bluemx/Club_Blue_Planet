@@ -928,7 +928,7 @@ api.patch('/proposals/:id', async (c) => {
   const id = c.req.param('id')
 
   const row = await c.env.DB
-    .prepare("SELECT id, title, proposedBy FROM mission WHERE id = ? AND familyId = ? AND status = 'propuesta'")
+    .prepare("SELECT id, title, points, proposedBy FROM mission WHERE id = ? AND familyId = ? AND status = 'propuesta'")
     .bind(id, c.get('familyId'))
     .first()
   if (!row) return c.json({ error: 'No encontrada.' }, 404)
@@ -951,15 +951,27 @@ api.patch('/proposals/:id', async (c) => {
 
   // Accepting may also adjust the points the adult thinks it is worth.
   const points = Number.isFinite(body.points) ? Math.max(0, Math.min(500, body.points)) : null
+  const worth = points ?? row.points
+  // The idea is theirs: accepting it also hands it to the kid who proposed it.
+  // (Before, it only joined the family's list, and "¡Aceptaron tu idea!"
+  // pointed at a mission the kid couldn't find.) Only while they're still a
+  // kid in this family.
+  const assignToKid = row.proposedBy
+    ? [c.env.DB
+        .prepare(`INSERT INTO assignment (id,missionId,childId,familyId,status,points,createdAt)
+                  SELECT ?, ?, id, ?, 'pendiente', ?, ? FROM user WHERE id = ? AND familyId = ? AND role = 'kid'`)
+        .bind(crypto.randomUUID(), id, c.get('familyId'), worth, now(), row.proposedBy, c.get('familyId'))]
+    : []
   await c.env.DB.batch([
     c.env.DB
       .prepare(`UPDATE mission SET status = 'activa'${points === null ? '' : ', points = ?'} WHERE id = ?`)
       .bind(...(points === null ? [id] : [points, id])),
+    ...assignToKid,
     ...tellKid({
       kind: 'aceptada',
       title: '¡Aceptaron tu idea!',
-      body: `“${row.title}” ya es una misión.`,
-      link: '/kid',
+      body: `“${row.title}” ya está en tus misiones. Complétala y gana ${worth} puntos.`,
+      link: '/kid/misiones',
     }),
   ])
 
