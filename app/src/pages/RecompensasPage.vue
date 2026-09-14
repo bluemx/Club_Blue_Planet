@@ -19,7 +19,7 @@
           v-for="r in list"
           :key="r.id"
           :title="r.title"
-          :subtitle="[r.subtitle, limitLabel(r)].filter(Boolean).join(' · ')"
+          :subtitle="[r.subtitle, limitLabel(r), askedLabel(r)].filter(Boolean).join(' · ')"
           :icon="r.icon"
           :color="r.color"
           :points="r.points"
@@ -209,7 +209,9 @@
       v-model="grantOpen"
       :reward="picked"
       :children="children"
+      :pending="pending.filter(p => p.rewardId === picked?.id)"
       @granted="onGranted"
+      @deliver="deliver"
     />
 
     <!-- create reward -->
@@ -300,6 +302,13 @@ const {
   data: pendingData, loading: loadingPending, reload: reloadPending,
 } = useResource(() => redemptions({ status: 'pedida', limit: 50 }))
 const pending = computed(() => pendingData.value?.redemptions ?? [])
+
+// "Loberto la pidió" on the reward itself, so the list says who's waiting.
+function askedLabel (r) {
+  const names = [...new Set(pending.value.filter(p => p.rewardId === r.id).map(p => p.childName))]
+  if (!names.length) return ''
+  return names.length === 1 ? `${names[0]} la pidió` : `${names.slice(0, -1).join(', ')} y ${names.at(-1)} la pidieron`
+}
 
 // A kid asking for a reward shows up here without a reload.
 const off = onNotification((n) => {

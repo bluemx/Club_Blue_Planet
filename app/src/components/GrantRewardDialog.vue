@@ -12,7 +12,7 @@
           :key="child.id"
           type="button"
           class="bp-grant-child"
-          :class="{ 'is-on': picked === child.id, 'is-short': !canGive(child) }"
+          :class="{ 'is-on': picked === child.id, 'is-short': !canGive(child), 'is-asked': !!requestOf(child) }"
           :disabled="!canGive(child)"
           @click="picked = child.id"
         >
@@ -20,7 +20,9 @@
           <span class="col text-left">
             <span class="bp-row-title">{{ child.name }}</span>
             <span class="bp-row-subtitle">
-              {{ usedUp(child)
+              {{ requestOf(child)
+                ? 'Lo pidió · entrégaselo'
+                : usedUp(child)
                 ? 'Ya la canjeó'
                 : canAfford(child)
                   ? `${child.points} pts · le quedarían ${child.points - reward.points}`
@@ -56,8 +58,11 @@ const props = defineProps({
   modelValue: { type: Boolean, default: false },
   reward: { type: Object, default: null },
   children: { type: Array, default: () => [] },
+  // This reward's requests still waiting to be handed over (from "Por entregar").
+  pending: { type: Array, default: () => [] },
 })
-const emit = defineEmits(['update:modelValue', 'granted'])
+// granted: a new one was given; deliver: hand over a child's existing request.
+const emit = defineEmits(['update:modelValue', 'granted', 'deliver'])
 
 const open = computed({
   get: () => props.modelValue,
@@ -72,23 +77,37 @@ const canAfford = (child) => child.points >= (props.reward?.points ?? 0)
 // The parent's per-child limit, counted by the API (asked for or handed over).
 const usedUp = (child) => props.reward?.maxPerChild != null &&
   (props.reward.usedBy?.[child.id] ?? 0) >= props.reward.maxPerChild
-const canGive = (child) => canAfford(child) && !usedUp(child)
+// A child who asked for it comes first: their points are already set aside by
+// the request, so "can't afford another" must not hide it (a tester handed the
+// reward to the wrong child because of that).
+const requestOf = (child) => props.pending.find(p => p.childId === child.id) ?? null
+const canGive = (child) => !!requestOf(child) || (canAfford(child) && !usedUp(child))
 
 function reset () {
   error.value = ''
-  // With a single child there is nothing to choose; preselect if they can pay.
+  // Whoever asked for it; else, with a single option, that one.
+  const asked = props.children.filter(requestOf)
   const affordable = props.children.filter(canGive)
-  picked.value = affordable.length === 1 ? affordable[0].id : null
+  picked.value = asked.length === 1 ? asked[0].id
+    : affordable.length === 1 ? affordable[0].id
+      : null
 }
 
 async function grant () {
   if (!picked.value) return
+  const child = props.children.find(c => c.id === picked.value)
+  const request = requestOf(child)
+  if (request) {
+    // The page delivers it the same way as its "Entregar" button.
+    emit('deliver', request)
+    open.value = false
+    return
+  }
   saving.value = true
   error.value = ''
 
   try {
     await redeemRewardFor(props.reward.id, picked.value)
-    const child = props.children.find(c => c.id === picked.value)
     emit('granted', { reward: props.reward, child })
     open.value = false
   } catch (err) {
@@ -130,6 +149,11 @@ async function grant () {
 .bp-grant-child.is-on {
   border-color: #1467E4;
   background: #F2F7FF;
+}
+
+.bp-grant-child.is-asked .bp-row-subtitle {
+  color: #16A66A;
+  font-weight: 800;
 }
 
 .bp-grant-child.is-short {
