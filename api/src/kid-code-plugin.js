@@ -84,7 +84,8 @@ export const kidCode = () => ({
         const familyId = await familyFor(db, parent)
 
         const { results } = await db
-          .prepare('SELECT id, name FROM user WHERE familyId = ? AND role = ? ORDER BY createdAt')
+          // avatar: the kid picker shows each child's face, not just a name
+          .prepare('SELECT id, name, avatar FROM user WHERE familyId = ? AND role = ? ORDER BY createdAt')
           .bind(familyId, 'kid')
           .all()
 

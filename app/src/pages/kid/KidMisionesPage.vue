@@ -6,24 +6,35 @@
     />
 
     <div class="bp-sheet">
-      <q-tabs
-        v-model="filter"
-        dense no-caps
-        active-color="primary"
-        indicator-color="primary"
-        class="bp-kid-tabs text-grey-7"
-      >
-        <q-tab name="todas" label="Todas" />
-        <q-tab name="pendiente" label="Por hacer" />
-        <q-tab ref="revisionTab" name="revision" label="En revisión" />
-        <q-tab name="lista" label="Listas" />
-      </q-tabs>
+      <!-- Same segments as the parents' Misiones; "Por hacer" is what matters. -->
+      <div class="bp-seg" role="tablist">
+        <button
+          v-for="t in TABS"
+          :key="t.status"
+          :ref="(el) => { if (t.status === 'revision') revisionTab = el }"
+          type="button"
+          role="tab"
+          class="bp-seg-btn"
+          :class="{ 'bp-seg-btn--on': filter === t.status }"
+          :aria-selected="filter === t.status"
+          @click="filter = t.status"
+        >
+          {{ t.label }}
+          <span
+            :key="t.status === 'revision' ? `r${bumpRevision}` : t.status"
+            class="bp-seg-count"
+            :class="{ 'bp-seg-count--done': t.status === 'lista', 'bp-seg-count--bump': t.status === 'revision' && bumpRevision }"
+          >
+            {{ counts[t.status] }}
+          </span>
+        </button>
+      </div>
 
       <q-inner-loading :showing="loading" />
       <p v-if="error" class="bp-auth-error">{{ error }}</p>
 
       <template v-if="!loading && !error">
-        <TransitionGroup tag="div" name="bp-fly">
+        <TransitionGroup :key="filter" tag="div" name="bp-fly">
         <MissionRow
           v-for="a in visible"
           :key="a.id"
@@ -65,7 +76,7 @@
         <p v-if="uploadError" class="bp-auth-error">{{ uploadError }}</p>
 
         <p v-if="!visible.length" class="bp-hint">
-          Nada por aquí todavía. ¡Pídele misiones a tus papás!
+          {{ EMPTY[filter] }}
         </p>
       </template>
     </div>
@@ -86,7 +97,18 @@ const STATE = {
   lista: { label: 'Lista', icon: 'check_circle' },
 }
 
-const filter = ref('todas')
+const TABS = [
+  { status: 'pendiente', label: 'Por hacer' },
+  { status: 'revision', label: 'En revisión' },
+  { status: 'lista', label: 'Realizadas' },
+]
+const EMPTY = {
+  pendiente: '¡Todo hecho! Pídele más misiones a tus papás.',
+  revision: 'Nada esperando a tus papás.',
+  lista: 'Aquí aparecerán las misiones que tus papás aprueben.',
+}
+
+const filter = ref('pendiente')
 const busyId = ref(null)
 
 const { data, loading, error, reload } = useResource(assignments)
@@ -98,16 +120,20 @@ const off = onNotification((n) => {
 })
 onBeforeUnmount(off)
 
-const visible = computed(() =>
-  filter.value === 'todas' ? list.value : list.value.filter(a => a.status === filter.value)
-)
+const visible = computed(() => list.value.filter(a => a.status === filter.value))
+const counts = computed(() => {
+  const c = { pendiente: 0, revision: 0, lista: 0 }
+  for (const a of list.value) c[a.status]++
+  return c
+})
 
 const rows = new Map()
 function setRow (id, comp) {
   if (comp?.$el) rows.set(id, comp.$el)
   else rows.delete(id)
 }
-const revisionTab = ref(null)
+let revisionTab = null
+const bumpRevision = ref(0)
 
 const fileInput = ref(null)
 const target = ref(null)
@@ -132,7 +158,7 @@ async function upload (event) {
     await uploadEvidence(a.id, file)
     // In place, like the parent's approvals: the mission heads for "En
     // revisión" instead of the whole list reloading under the kid's finger.
-    flyTo(rows.get(a.id), revisionTab.value?.$el)
+    flyTo(rows.get(a.id), revisionTab).then(() => bumpRevision.value++)
     Object.assign(a, { status: 'revision', hasPhoto: 1, reportedAt: Date.now() })
   } catch (err) {
     uploadError.value = err.data?.error || 'No se pudo subir la foto.'
@@ -144,19 +170,11 @@ async function upload (event) {
 </script>
 
 <style scoped>
-.bp-kid-tabs {
-  margin-bottom: 10px;
-}
-
-.bp-kid-tabs :deep(.q-tab) {
-  min-height: 34px;
-  min-width: 0;
-  padding: 0 8px;
-}
-
-.bp-kid-tabs :deep(.q-tab__label) {
-  font-size: 11.5px;
-  font-weight: 700;
+/* Three segments on a phone: a little tighter than the parents' two. */
+.bp-seg-btn {
+  gap: 5px;
+  padding: 9px 4px;
+  font-size: 12px;
 }
 
 .bp-state {

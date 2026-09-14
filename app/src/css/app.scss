@@ -5,6 +5,22 @@
 @import '@fontsource/nunito/800.css';
 
 $ink-muted: #7C93B5;
+
+// Soft-3D raise, shared with the home page's buttons: a top light, a darker
+// lower lip and a coloured drop shadow. Pressed flips the light inward.
+$bp-raise-primary:
+  inset 0 1px 0 rgba(255, 255, 255, .45),
+  inset 0 -2px 0 rgba(8, 60, 150, .45),
+  0 2px 4px rgba(11, 43, 107, .12),
+  0 14px 24px -10px rgba(20, 103, 228, .6);
+$bp-raise-light:
+  inset 0 1px 0 #fff,
+  inset 0 -2px 0 rgba(20, 103, 228, .10),
+  0 2px 4px rgba(11, 43, 107, .08),
+  0 10px 18px -10px rgba(20, 103, 228, .35);
+$bp-pressed:
+  inset 0 2px 5px rgba(8, 40, 110, .35),
+  0 1px 2px rgba(11, 43, 107, .12);
 $hairline: #E8F0FB;
 
 body {
@@ -674,21 +690,27 @@ body {
   cursor: pointer;
   padding: 13px 16px;
   border-radius: 999px;
-  background: linear-gradient(180deg, #4E97FF, $primary);
+  background: linear-gradient(180deg, #5AA2FF 0%, $primary 100%);
   color: #fff;
   font-family: inherit;
   font-size: 14.5px;
   font-weight: 800;
-  box-shadow: 0 8px 18px rgba(20, 103, 228, .42);
-  transition: transform .18s cubic-bezier(.34, 1.56, .64, 1), box-shadow .18s, opacity .18s;
+  box-shadow: $bp-raise-primary;
+  transition: transform .18s cubic-bezier(.16, 1, .3, 1), box-shadow .18s, opacity .18s;
 }
 
 .bp-submit:hover:not(:disabled) {
-  box-shadow: 0 10px 22px rgba(20, 103, 228, .55);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .45),
+    inset 0 -2px 0 rgba(8, 60, 150, .45),
+    0 2px 4px rgba(11, 43, 107, .12),
+    0 18px 30px -10px rgba(20, 103, 228, .7);
 }
 
 .bp-submit:active:not(:disabled) {
-  transform: scale(.98);
+  transform: translateY(1px);
+  box-shadow: $bp-pressed;
 }
 
 .bp-submit:disabled {
@@ -718,15 +740,18 @@ a.bp-submit {
 
 // ---- secondary (outlined) action ----
 .bp-submit--ghost {
-  background: #F2F7FF;
+  background: linear-gradient(180deg, #FFFFFF 0%, #EEF5FF 100%);
   color: $primary;
   border: 1.5px solid $primary;
-  box-shadow: none;
+  box-shadow: $bp-raise-light;
 }
 
 .bp-submit--ghost:hover:not(:disabled) {
-  background: #E8F1FF;
-  box-shadow: none;
+  box-shadow:
+    inset 0 1px 0 #fff,
+    inset 0 -2px 0 rgba(20, 103, 228, .12),
+    0 2px 4px rgba(11, 43, 107, .10),
+    0 14px 24px -10px rgba(20, 103, 228, .45);
 }
 
 // ---- divider ----
@@ -1271,4 +1296,99 @@ a.bp-submit {
   font-size: 12.5px;
   font-weight: 700;
   color: $primary;
+}
+
+// The kid's home hero: their face is the biggest thing on the screen.
+.bp-me--hero {
+  flex-direction: column;
+  gap: 10px;
+  text-align: center;
+}
+
+.bp-me-face {
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 6px #fff,
+    0 0 0 9px #CFE1FB,
+    0 22px 38px -14px rgba(20, 103, 228, .5);
+  transition: transform .25s cubic-bezier(.34, 1.56, .64, 1);
+}
+
+.bp-me:hover .bp-me-face { transform: scale(1.03) rotate(-2deg); }
+
+.bp-me--hero .bp-me-name { font-size: 18px; }
+
+.bp-me--hero .bp-me-cta {
+  display: inline-flex;
+  margin-top: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #5AA2FF 0%, $primary 100%);
+  box-shadow: $bp-raise-primary;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bp-me:hover .bp-me-face { transform: none; }
+}
+
+// ===================================================================
+// Soft-3D buttons and selects, app-wide
+// ===================================================================
+// Filled Quasar buttons (any colour: the sheen is a translucent overlay on
+// top of the bg-* colour, so primary, secondary, grey and negative all get it).
+// Quasar's bg-* classes set `background` with !important, hence the same here.
+.q-btn:not(.q-btn--flat):not(.q-btn--outline) {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, .24) 0%, rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, .06) 100%) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .45),
+    inset 0 -2px 0 rgba(0, 0, 0, .16),
+    0 2px 4px rgba(11, 43, 107, .12),
+    0 10px 18px -9px rgba(11, 43, 107, .35);
+}
+
+// Outline buttons: a raised white face; Quasar's own border stays.
+.q-btn.q-btn--outline {
+  background-image: linear-gradient(180deg, #FFFFFF 0%, #EEF5FF 100%) !important;
+  box-shadow: $bp-raise-light;
+}
+
+.q-btn:not(.q-btn--flat) {
+  transition: transform .18s cubic-bezier(.16, 1, .3, 1), box-shadow .18s;
+}
+
+.q-btn:not(.q-btn--flat):not(.disabled):hover { transform: translateY(-1px); }
+
+.q-btn:not(.q-btn--flat):not(.disabled):active {
+  transform: translateY(1px);
+  box-shadow: $bp-pressed !important;
+}
+
+.q-btn.disabled:not(.q-btn--flat) { box-shadow: none; }
+
+// Segmented toggles: the group is the raised piece, not each segment.
+.q-btn-group:not(.q-btn-group--flat) {
+  box-shadow: $bp-raise-light;
+}
+
+.q-btn-group > .q-btn:not(.q-btn--flat) {
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+// Any select left in the app gets the same raised face as the buttons.
+.q-select.q-field--outlined .q-field__control {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F2F7FF 100%);
+  box-shadow: $bp-raise-light;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .q-btn:not(.q-btn--flat):not(.disabled):hover,
+  .q-btn:not(.q-btn--flat):not(.disabled):active,
+  .bp-submit:hover:not(:disabled),
+  .bp-submit:active:not(:disabled) { transform: none; }
 }

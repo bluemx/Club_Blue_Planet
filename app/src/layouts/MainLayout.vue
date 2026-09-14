@@ -201,8 +201,7 @@ const ADULT_NAV = [
   { to: '/', icon: 'home', label: 'Inicio' },
   { to: '/misiones', icon: 'missions', label: 'Misiones' },
   { to: '/recompensas', icon: 'rewards', label: 'Recompensas' },
-  { to: '/estadisticas', icon: 'stats', label: 'Estadísticas' },
-  { to: '/perfil', icon: 'profile', label: 'Perfil' },
+  { to: '/perfil', icon: 'profile', label: 'Cuenta' },
 ]
 
 const KID_NAV = [

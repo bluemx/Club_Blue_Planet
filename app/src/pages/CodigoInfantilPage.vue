@@ -11,18 +11,16 @@
         El código cambia cada 24 horas o cuando generes uno nuevo.
       </div>
 
-      <q-select
-        v-if="children.length > 1"
-        v-model="childId"
-        :options="children"
-        option-value="id"
-        option-label="name"
-        emit-value map-options
-        outlined dense rounded
-        label="¿Para cuál hijo?"
-        class="bp-field q-mb-md"
-        @update:model-value="regenerate"
-      />
+      <template v-if="children.length > 1">
+        <div class="bp-field-label">¿Para cuál hijo?</div>
+        <KidPicker
+          v-model="childId"
+          :children="children"
+          label="¿Para cuál hijo?"
+          class="q-mb-sm"
+          @change="regenerate"
+        />
+      </template>
 
       <div class="bp-code-display">
         <span v-for="(char, i) in code" :key="i" class="bp-code-char">{{ char }}</span>
@@ -74,6 +72,7 @@
 </template>
 
 <script setup>
+import KidPicker from '@/components/KidPicker.vue'
 import { ref, onMounted, onUnmounted } from 'vue'
 import { copyToClipboard } from 'quasar'
 import PageHeader from '@/components/PageHeader.vue'
