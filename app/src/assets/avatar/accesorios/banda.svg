@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" data-name="Banda deportiva" data-unlock="atleta">
+  <!-- Sports headband, above the eyebrows -->
+  <!-- Lowered onto the forehead, just above the eyebrows. -->
+  <g stroke="#1A1A1A" stroke-width="8" stroke-linejoin="round" transform="translate(0 26)">
+    <path d="M-10 62 Q200 22 410 62 L410 96 Q200 56 -10 96 Z" fill="#E8438E"/>
+    <path d="M-10 77 Q200 37 410 77 L410 84 Q200 44 -10 84 Z" fill="#FFFFFF" stroke-width="0"/>
+  </g>
+</svg>

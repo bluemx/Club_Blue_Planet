@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" data-name="Sombrero de explorador" data-unlock="explorador">
+  <!-- The explorer hat the Club Blue Planet kids wear, with the club's leaf. -->
+  <!-- Scaled 1.3× about the brim and set a little lower: at 1× it read as a
+       tiny hat perched on a big face. The brim stays above the highest eyes,
+       and the crown is kept low so the circle crop doesn't cut it off. -->
+  <g stroke="#1A1A1A" stroke-width="6.2" stroke-linejoin="round" stroke-linecap="round"
+     transform="translate(200 96) scale(1.3) translate(-200 -90)">
+    <path d="M100 86 C100 42 140 24 200 24 C260 24 300 42 300 86 Z" fill="#E7C58F"/>
+    <path d="M146 42 C166 34 188 32 208 33" fill="none" stroke="#F6E2BE" stroke-width="10"/>
+    <path d="M101 64 C168 54 232 54 299 64 L300 84 C232 74 168 74 100 84 Z" fill="#8A5A2B"/>
+    <path d="M0 90 Q200 58 400 90 Q200 124 0 90 Z" fill="#D9B070"/>
+    <path d="M244 74 C244 58 258 48 274 50 C276 66 264 78 244 74 Z" fill="#3FBF6F" stroke-width="6"/>
+  </g>
+</svg>

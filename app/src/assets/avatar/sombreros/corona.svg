@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" data-name="Corona" data-unlock="imparable">
+  <!-- Gold crown -->
+  <!-- Scaled 1.2× and lowered so the band sits on the forehead. -->
+  <g stroke="#1A1A1A" stroke-width="6.7" stroke-linejoin="round" stroke-linecap="round"
+     transform="translate(200 100) scale(1.2) translate(-200 -90)">
+    <path d="M112 90 L112 38 L148 64 L174 14 L200 50 L226 14 L252 64 L288 38 L288 90 Z" fill="#FFC531"/>
+    <path d="M112 72 L288 72" fill="none" stroke="#E0A413" stroke-width="6"/>
+    <circle cx="112" cy="36" r="9" fill="#FFE27A" stroke-width="6"/>
+    <circle cx="174" cy="12" r="9" fill="#FFE27A" stroke-width="6"/>
+    <circle cx="226" cy="12" r="9" fill="#FFE27A" stroke-width="6"/>
+    <circle cx="288" cy="36" r="9" fill="#FFE27A" stroke-width="6"/>
+    <circle cx="160" cy="82" r="8" fill="#E8438E" stroke-width="5"/>
+    <circle cx="200" cy="82" r="9" fill="#1467E4" stroke-width="5"/>
+    <circle cx="240" cy="82" r="8" fill="#34C77B" stroke-width="5"/>
+  </g>
+</svg>

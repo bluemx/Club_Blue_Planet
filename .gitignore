@@ -1,0 +1,15 @@
+# Dependencies and build output
+node_modules/
+dist/
+.quasar/
+
+# Local Cloudflare state and secrets — never commit these
+.wrangler/
+.dev.vars
+.env*
+
+# Tool state (agent sessions, replays, checkpoints)
+.omc/
+
+# OS noise
+.DS_Store

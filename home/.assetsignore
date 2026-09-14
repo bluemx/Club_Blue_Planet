@@ -1,0 +1,9 @@
+# Config and tooling state, not content — must never be served from the site root.
+wrangler.jsonc
+.assetsignore
+# Any hidden directory at any depth. A stray .omc/ state file shipped once
+# because a shell had cd'd into home/assets; this makes that impossible.
+**/.*/
+**/.DS_Store
+# Superseded by assets/hero.mp4 — kept out of the bundle, not the repo.
+assets/Hero-Banner.svg
