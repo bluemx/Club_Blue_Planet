@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Club Blue Planet — Hábitos y misiones para tus hijos</title>
+  <meta name="description" content="Misiones, recompensas y aprendizaje que ayudan a tus hijos a crear hábitos mientras se divierten.">
+  <meta name="theme-color" content="#0B2B6B">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Club Blue Planet">
+  <meta property="og:title" content="Club Blue Planet">
+  <meta property="og:description" content="Misiones, recompensas y aprendizaje que ayudan a tus hijos a crear hábitos mientras se divierten.">
+  <meta property="og:image" content="https://clubblueplanet-home.ealbinu.workers.dev/og-image.png">
+  <meta property="og:url" content="https://clubblueplanet-home.ealbinu.workers.dev/">
+  <meta property="og:locale" content="es_MX">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,400;0,600;0,700;0,800;0,900&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              primary: '#1268E8',
+              sky: '#EAF4FF',
+              navy: '#0B2B6B',
+              deep: '#071E4E',
+              lime: '#C6E44B',
+              green: '#34C77B',
+            },
+          },
+          fontFamily: {
+            sans: ['Nunito', 'ui-rounded', 'Segoe UI', 'system-ui', 'sans-serif'],
+          },
+          maxWidth: { content: '1120px' },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    /*
+      Soft-3D depth system. Every elevation is three layers, never one blur:
+      a tight contact shadow, a wide ambient shadow tinted with the brand navy
+      (a neutral gray shadow on a blue page reads as dirt), and an inset top
+      highlight that stands in for the light source. Drop any one of the three
+      and the surface goes flat again.
+    */
+    :root {
+      --lift: cubic-bezier(.16, 1, .3, 1);   /* exponential ease-out */
+    }
+
+    /* The page's one lifted panel. Surfaces are never flat #fff — the 4%
+       vertical fall is half of what makes them read as a physical sheet. */
+    .panel {
+      background: linear-gradient(180deg, #fff 0%, #F5F9FF 100%);
+      box-shadow:
+        0 6px 12px rgba(11, 43, 107, .08),
+        0 40px 70px -26px rgba(11, 43, 107, .30),
+        inset 0 1px 0 #fff;
+    }
+
+    .card {
+      border-radius: 20px;
+      background: linear-gradient(180deg, #fff 0%, #F5F9FF 100%);
+      box-shadow:
+        0 1px 2px rgba(11, 43, 107, .05),
+        0 10px 22px -10px rgba(11, 43, 107, .16),
+        inset 0 1px 0 rgba(255, 255, 255, .9);
+      transition: transform .3s var(--lift), box-shadow .3s var(--lift);
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow:
+        0 2px 4px rgba(11, 43, 107, .06),
+        0 26px 44px -16px rgba(11, 43, 107, .26),
+        inset 0 1px 0 #fff;
+    }
+
+    .q-amber { --q1: #FFFDF4; --q2: #FBF3DC; }
+    .q-pink  { --q1: #FFFAFC; --q2: #FCEAF2; }
+    .q-green { --q1: #F8FDFA; --q2: #E7F7EF; }
+
+    .card-quote {
+      border-radius: 20px;
+      background: linear-gradient(180deg, var(--q1) 0%, var(--q2) 100%);
+      box-shadow:
+        0 1px 2px rgba(11, 43, 107, .05),
+        0 14px 28px -12px rgba(11, 43, 107, .18),
+        inset 0 1px 0 rgba(255, 255, 255, .9);
+    }
+
+    /*
+      Icon tiles. The lower inset glow is the whole trick: it reads as the tile
+      curving away from the light, which a flat fill plus drop shadow never does.
+    */
+    /*
+      The five tile hues are the app's own mission-row badge family
+      (app/src/css/app.scss .bp-row-badge) — blue, green, purple, pink, amber.
+      Reusing them means the marketing page and the product agree on what a
+      category looks like, instead of inventing a second palette.
+      Inks are darkened from the app's values to clear 3:1 on the pale tile.
+    */
+    .tile-blue   { --t1: #F2F7FF; --t2: #D8E9FF; --tk: #1467E4; --ti: rgba(20, 103, 228, .16); --tg: rgba(20, 103, 228, .40); }
+    .tile-green  { --t1: #F0FDF6; --t2: #D2F5E3; --tk: #12945E; --ti: rgba(18, 148, 94, .16);  --tg: rgba(18, 148, 94, .38); }
+    .tile-purple { --t1: #F8F4FF; --t2: #E8DEFF; --tk: #6D3BE0; --ti: rgba(109, 59, 224, .16); --tg: rgba(109, 59, 224, .38); }
+    .tile-pink   { --t1: #FFF4F9; --t2: #FFDDEB; --tk: #D62F7E; --ti: rgba(214, 47, 126, .15); --tg: rgba(214, 47, 126, .38); }
+    .tile-amber  { --t1: #FFFAEC; --t2: #FFEDC4; --tk: #B0770A; --ti: rgba(176, 119, 10, .16); --tg: rgba(210, 150, 20, .42); }
+
+    /*
+      The lower inset glow is the whole trick: it reads as the tile curving away
+      from the light, which a flat fill plus a drop shadow never does.
+    */
+    .tile {
+      display: grid;
+      place-items: center;
+      margin-inline: auto;
+      width: 4.5rem; height: 4.5rem;
+      border-radius: 1.35rem;
+      color: var(--tk);
+      background: linear-gradient(160deg, #FFFFFF 0%, var(--t1) 48%, var(--t2) 100%);
+      box-shadow:
+        inset 0 2px 2px rgba(255, 255, 255, .95),
+        inset 0 -4px 7px var(--ti),
+        0 2px 3px rgba(11, 43, 107, .08),
+        0 12px 22px -10px var(--tg);
+      transition: transform .3s var(--lift), box-shadow .3s var(--lift);
+    }
+    .card:hover .tile {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow:
+        inset 0 2px 2px rgba(255, 255, 255, .95),
+        inset 0 -4px 7px var(--ti),
+        0 2px 3px rgba(11, 43, 107, .08),
+        0 18px 28px -10px var(--tg);
+    }
+
+    /* Chip: the tile's counterpart on dark surfaces */
+    .chip {
+      display: grid;
+      place-items: center;
+      width: 3.25rem; height: 3.25rem;
+      flex: none;
+      border-radius: 1.1rem;
+      background: linear-gradient(160deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .05));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .35),
+        inset 0 -3px 6px rgba(0, 0, 0, .18),
+        0 8px 16px -8px rgba(0, 0, 0, .55);
+    }
+
+    /* ── Buttons: raised, and they actually give under the pointer ────────── */
+    .btn {
+      transition: transform .18s var(--lift), box-shadow .18s var(--lift), filter .18s;
+    }
+    .btn:hover  { transform: translateY(-2px); }
+    .btn:active { transform: translateY(1px); transition-duration: .06s; }
+
+    .btn-lime {
+      background: linear-gradient(180deg, #D8F16E 0%, #BCDD3D 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .75),
+        inset 0 -2px 0 rgba(116, 148, 20, .35),
+        0 2px 4px rgba(11, 43, 107, .10),
+        0 14px 24px -10px rgba(150, 190, 40, .60);
+    }
+    .btn-lime:hover {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .8),
+        inset 0 -2px 0 rgba(116, 148, 20, .35),
+        0 2px 4px rgba(11, 43, 107, .10),
+        0 20px 30px -10px rgba(150, 190, 40, .70);
+    }
+    .btn-lime:active {
+      box-shadow:
+        inset 0 2px 5px rgba(96, 124, 14, .40),
+        0 1px 2px rgba(11, 43, 107, .12);
+    }
+
+    .btn-white {
+      background: linear-gradient(180deg, #FFFFFF 0%, #EFF5FF 100%);
+      box-shadow:
+        inset 0 1px 0 #fff,
+        inset 0 -2px 0 rgba(11, 43, 107, .12),
+        0 2px 4px rgba(0, 0, 0, .14),
+        0 16px 28px -12px rgba(0, 0, 0, .45);
+    }
+    .btn-white:active {
+      box-shadow:
+        inset 0 2px 5px rgba(11, 43, 107, .22),
+        0 1px 2px rgba(0, 0, 0, .18);
+    }
+
+    .btn-outline {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .25),
+        0 2px 6px rgba(0, 0, 0, .18);
+    }
+
+    /* ── Dark bands: lit from the upper left, not a flat gradient ─────────── */
+    .band {
+      background:
+        radial-gradient(115% 130% at 12% -10%, rgba(86, 148, 255, .32), transparent 58%),
+        linear-gradient(160deg, #123A82 0%, #071E4E 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, .18),
+        0 6px 12px rgba(11, 43, 107, .14),
+        0 44px 72px -30px rgba(11, 43, 107, .60);
+    }
+
+    /* ── Device frame ────────────────────────────────────────────────────── */
+    .phone-stage {
+      position: relative;
+      perspective: 1300px;
+      perspective-origin: 50% 42%;
+    }
+    .phone-stage::after {              /* contact shadow: what grounds the device */
+      content: '';
+      position: absolute;
+      left: 8%; right: 8%; bottom: -22px; height: 34px;
+      border-radius: 50%;
+      background: radial-gradient(50% 50% at 50% 50%, rgba(11, 43, 107, .34), transparent 72%);
+      filter: blur(7px);
+      z-index: -1;
+    }
+
+    .phone {
+      position: relative;
+      padding: .6rem;
+      border-radius: 2.5rem;
+      background: linear-gradient(158deg, #24344F 0%, #0D1B2F 42%, #050B16 100%);
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, .10),
+        inset 0 2px 1px rgba(255, 255, 255, .24),
+        inset 0 -2px 2px rgba(0, 0, 0, .6),
+        0 4px 8px rgba(11, 43, 107, .14),
+        0 34px 56px -24px rgba(11, 43, 107, .50);
+
+      /* The sweep: --ry is driven by scroll, by CSS or by the JS fallback. */
+      --ry-max: 30deg;
+      transform-style: preserve-3d;
+      transform: rotateY(var(--ry, 0deg));
+      will-change: transform;
+    }
+
+    /*
+      The screen sits 9px proud of the body. Flat siblings rotating together
+      read as printed paper; the parallax between bezel and glass as the phone
+      turns is what makes it read as an object with a front and a back.
+    */
+    .phone img {
+      display: block;
+      width: 100%;
+      border-radius: 2rem;
+      transform: translateZ(9px);
+    }
+    .phone::before {                   /* the notch */
+      content: '';
+      position: absolute;
+      top: .6rem; left: 50%;
+      transform: translateX(-50%) translateZ(11px);
+      width: 34%; height: 1.15rem;
+      background: #0D1B2F;
+      border-radius: 0 0 .8rem .8rem;
+    }
+    /*
+      Specular sheen. It slides across as the phone turns — glass catching the
+      light is the cue that separates a screenshot from a screen.
+    */
+    .phone .glass {
+      position: absolute;
+      inset: .6rem;
+      border-radius: 2rem;
+      transform: translateZ(10px);
+      pointer-events: none;
+      background: linear-gradient(
+        105deg,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, .30) 46%,
+        rgba(255, 255, 255, .06) 56%,
+        rgba(255, 255, 255, 0) 70%);
+      background-size: 300% 100%;
+      background-position: var(--sheen, 50%) 0;
+    }
+
+    /*
+      Scroll-driven where the browser has it — it runs off the main thread, so
+      the sweep stays smooth through a fast flick. The script below covers the
+      browsers that don't, and only those.
+    */
+    @keyframes phone-sweep {
+      from { transform: rotateY(var(--ry-max)); }
+      to   { transform: rotateY(calc(var(--ry-max) * -1)); }
+    }
+    @keyframes phone-sheen {
+      from { background-position: 100% 0; }
+      to   { background-position: 0% 0; }
+    }
+    @supports (animation-timeline: view()) {
+      .phone {
+        animation: phone-sweep linear both;
+        animation-timeline: view();
+        animation-range: cover;
+      }
+      .phone .glass {
+        animation: phone-sheen linear both;
+        animation-timeline: view();
+        animation-range: cover;
+      }
+    }
+
+    /* Heading underline accent from the design */
+    .rule-accent::after {
+      content: '';
+      display: block;
+      height: 4px; margin-top: .7rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #C6E44B, rgba(198, 228, 75, 0));
+    }
+
+    /* Figures line up column to column only with lining numerals */
+    .num { font-variant-numeric: tabular-nums; }
+
+    details[open] .chev { transform: rotate(180deg); }
+
+    /*
+      The one authored motion moment on the page: the benefit tiles assemble.
+      Default state is visible — only the script that can animate them hides
+      them first, so a JS failure or reduced-motion leaves a complete page.
+    */
+    .js .rise { opacity: 0; transform: translateY(20px); }
+    .js .rise.in {
+      opacity: 1;
+      transform: none;
+      transition:
+        opacity .65s var(--lift) calc(var(--i, 0) * 55ms),
+        transform .65s var(--lift) calc(var(--i, 0) * 55ms);
+    }
+
+    /* ── Browser surfaces: the parts we did not draw still carry the design ── */
+    ::selection { background: #C6E44B; color: #071E4E; }
+    :focus-visible {
+      outline: 3px solid #1268E8;
+      outline-offset: 3px;
+      border-radius: 8px;
+    }
+    html { scroll-behavior: smooth; scrollbar-color: #A9C7F0 #E3EFFF; }
+    ::-webkit-scrollbar { width: 13px; height: 13px; }
+    ::-webkit-scrollbar-track { background: #E3EFFF; }
+    ::-webkit-scrollbar-thumb {
+      background: #A9C7F0;
+      border: 3px solid #E3EFFF;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: #7DA9E8; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .js .rise { opacity: 1; transform: none; }
+      .btn:hover, .card:hover, .card:hover .tile { transform: none; }
+      .phone { animation: none; transform: none; }
+      .phone .glass { animation: none; }
+    }
+  </style>
+</head>
+
+<body class="bg-white font-sans text-brand-navy antialiased">
+
+  <!-- ─────────────── Header ─────────────── -->
+  <header class="sticky top-0 z-50 bg-gradient-to-b from-[#123A82] to-brand-navy text-white shadow-[0_2px_4px_rgba(11,43,107,.18),0_16px_32px_-16px_rgba(11,43,107,.55)]">
+    <div class="mx-auto flex max-w-content items-center justify-between gap-4 px-5 py-2.5">
+      <a href="#top" class="shrink-0">
+        <img src="assets/Logo-Menu.svg" alt="Club Blue Planet" class="h-14 w-auto md:h-16" />
+      </a>
+
+      <nav class="hidden items-center gap-7 text-[15px] font-semibold lg:flex">
+        <a href="#que-es" class="transition hover:text-brand-lime">¿Qué es Club Blue Planet?</a>
+        <a href="#beneficios" class="transition hover:text-brand-lime">Beneficios</a>
+        <a href="#quienes-somos" class="transition hover:text-brand-lime">¿Quiénes somos?</a>
+      </nav>
+
+      <div class="hidden items-center gap-3 md:flex">
+        <a href="https://clubblueplanet-app.ealbinu.workers.dev/#/login"
+           class="btn btn-outline rounded-full border-2 border-white/80 px-5 py-2 text-[13px] font-extrabold uppercase tracking-wide hover:bg-white hover:text-brand-navy">
+          Iniciar sesión
+        </a>
+        <a href="https://clubblueplanet-app.ealbinu.workers.dev/#/registro"
+           class="btn btn-lime rounded-full px-5 py-2 text-[13px] font-extrabold uppercase tracking-wide text-brand-deep">
+          Únete ahora
+        </a>
+      </div>
+
+      <!-- Mobile: native <details> disclosure, no JS needed -->
+      <details class="md:hidden">
+        <summary class="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl bg-white/10">
+          <svg class="chev h-6 w-6 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </summary>
+        <div class="absolute left-0 right-0 top-full border-t border-white/10 bg-brand-navy px-5 py-4">
+          <a href="#que-es" class="block py-2 font-semibold">¿Qué es Club Blue Planet?</a>
+          <a href="#beneficios" class="block py-2 font-semibold">Beneficios</a>
+          <a href="#quienes-somos" class="block py-2 font-semibold">¿Quiénes somos?</a>
+          <div class="mt-3 flex gap-3">
+            <a href="https://clubblueplanet-app.ealbinu.workers.dev/#/login"
+               class="flex-1 rounded-full border-2 border-white/80 py-2 text-center text-[13px] font-extrabold uppercase">Iniciar sesión</a>
+            <a href="https://clubblueplanet-app.ealbinu.workers.dev/#/registro"
+               class="flex-1 rounded-full bg-brand-lime py-2 text-center text-[13px] font-extrabold uppercase text-brand-deep">Únete ahora</a>
+          </div>
+        </div>
+      </details>
+    </div>
+  </header>
+
+  <!-- ─────────────── Hero ─────────────── -->
+  <section id="top" class="relative isolate overflow-hidden bg-gradient-to-b from-brand-sky to-white">
+    <!--
+      The video sits under the copy on phones and goes full-bleed behind it from
+      md up. Its left third is empty sky, which is exactly where the copy lands.
+    -->
+    <video
+      class="h-[260px] w-full object-cover object-[68%_50%] sm:h-[360px] md:absolute md:inset-0 md:-z-10 md:h-full md:object-center"
+      src="assets/hero.mp4"
+      poster="assets/hero-poster.jpg"
+      autoplay muted loop playsinline preload="metadata"
+      aria-hidden="true" tabindex="-1"></video>
+
+    <!-- Scrim so the copy stays readable whatever frame the loop is on -->
+    <div class="pointer-events-none absolute inset-0 -z-10 hidden bg-gradient-to-r from-white/85 via-white/40 to-transparent md:block"></div>
+
+    <div class="relative mx-auto flex max-w-content items-center px-5 py-10 md:min-h-[600px] md:py-24 lg:min-h-[660px]">
+      <div class="max-w-xl">
+        <h1 class="text-[2.1rem] font-black leading-[1.12] tracking-tight md:text-5xl lg:text-[3.4rem]">
+          Una app que convierte cada día en una
+          <span class="text-brand-primary">aventura.</span>
+        </h1>
+        <p class="mt-5 max-w-md text-base font-semibold text-brand-navy/75 md:text-lg">
+          Misiones, recompensas y aprendizaje que ayudan a tus hijos a crear
+          hábitos mientras se divierten.
+        </p>
+        <a href="https://clubblueplanet-app.ealbinu.workers.dev/#/registro"
+           class="btn btn-lime mt-7 inline-flex items-center gap-3 rounded-full px-7 py-3.5 text-sm font-extrabold uppercase tracking-wide text-brand-deep">
+          Únete ahora
+          <span class="flex h-7 w-7 items-center justify-center rounded-full bg-white/70">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h13M13 6l6 6-6 6" />
+            </svg>
+          </span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────── Tú tienes el control ─────────────── -->
+  <section id="que-es" class="relative bg-gradient-to-b from-brand-sky via-white to-brand-sky scroll-mt-24">
+    <div class="mx-auto max-w-content px-5 py-14 md:py-20">
+      <div class="panel rounded-[2rem] p-7 md:p-12">
+        <h2 class="text-center text-2xl font-black md:text-4xl">
+          Tú tienes el control, siempre
+        </h2>
+
+        <div class="mt-10 grid items-center gap-10 md:grid-cols-2 md:gap-14">
+          <div class="phone-stage mx-auto w-full max-w-[290px]">
+            <div class="phone">
+              <img src="assets/screens/asignar.jpg" width="560" height="1210"
+                   alt="Pantalla de la app para asignar misiones y elegir su duración" loading="lazy" />
+              <span class="glass"></span>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <p class="text-base leading-relaxed md:text-lg">
+              <strong class="font-black">Club Blue Planet</strong> es una app familiar que
+              convierte las responsabilidades diarias de los niños en aventuras, ayudando a
+              madres y padres a organizar rutinas, fomentar buenos hábitos y acompañar su
+              desarrollo de forma divertida.
+            </p>
+
+            <p class="text-base leading-relaxed md:text-lg">
+              <strong class="font-black">Acompaña</strong> a tu hijo en su aventura con la
+              tranquilidad de estar al tanto de cada paso.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- One continuous colour field behind the four middle sections -->
+  <div class="bloom-field">
+
+  <!-- ─────────────── Descubre la app ─────────────── -->
+  <section>
+    <div class="mx-auto max-w-content px-5 py-14 md:py-20">
+      <h2 class="rule-accent text-2xl font-black md:text-4xl">
+        Descubre la <span class="text-brand-primary">app</span>
+      </h2>
+
+      <p class="mt-6 max-w-xl text-base leading-relaxed md:text-lg">
+        <strong class="font-black">Misión por misión</strong><br />
+        Cumple retos, gana puntos y canjéalos por premios.
+        Así de simple es Club Blue Planet.
+      </p>
+
+      <div class="mt-12 grid justify-center gap-10 sm:grid-cols-2 sm:gap-8 md:gap-14">
+        <div class="phone-stage mx-auto w-full max-w-[290px]">
+          <div class="phone">
+            <img src="assets/screens/monitorear.jpg" width="560" height="1210"
+                 alt="Pantalla para monitorear y aprobar las tareas de tus hijos" loading="lazy" />
+              <span class="glass"></span>
+          </div>
+        </div>
+        <div class="phone-stage mx-auto w-full max-w-[290px] sm:mt-12">
+          <div class="phone">
+            <img src="assets/screens/sugeridas.jpg" width="560" height="1210"
+                 alt="Pantalla con las misiones sugeridas para asignar" loading="lazy" />
+              <span class="glass"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────── Beneficios ─────────────── -->
+  <section id="beneficios" class="scroll-mt-24">
+    <div class="mx-auto max-w-content px-5 pb-16 pt-6 md:pb-24">
+      <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- Icon file → card, in the order the design lays them out -->
+        <article class="card rise p-6 text-center">
+          <span class="tile tile-blue"><svg viewBox="0 0 150 150" fill="none" class="h-10 w-10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M43.75 106.25V81.25L106.25 18.75L131.25 43.75L68.75 106.25H43.75Z" stroke="currentColor" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.75 131.25H131.25" stroke="currentColor" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M87.5 37.5L112.5 62.5" stroke="currentColor" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <h3 class="mt-4 text-lg font-black leading-tight text-brand-primary">Asigna y personaliza</h3>
+          <p class="mt-2 text-sm font-semibold leading-relaxed text-brand-navy/70">
+            Elige misiones, establece metas y adapta las experiencias a su edad.
+          </p>
+        </article>
+
+        <article class="card rise p-6 text-center">
+          <span class="tile tile-green"><svg viewBox="0 0 150 150" fill="none" class="h-10 w-10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M118.75 131.25C118.75 132.908 119.408 134.497 120.581 135.669C121.753 136.842 123.342 137.5 125 137.5C126.658 137.5 128.247 136.842 129.419 135.669C130.592 134.497 131.25 132.908 131.25 131.25H118.75ZM18.75 131.25C18.75 132.908 19.4085 134.497 20.5806 135.669C21.7527 136.842 23.3424 137.5 25 137.5C26.6576 137.5 28.2473 136.842 29.4194 135.669C30.5915 134.497 31.25 132.908 31.25 131.25H18.75ZM116.169 65.6125C115.588 65.0318 114.899 64.5712 114.14 64.2569C113.381 63.9427 112.568 63.7809 111.747 63.7809C110.926 63.7809 110.112 63.9427 109.354 64.2569C108.595 64.5712 107.906 65.0318 107.325 65.6125C106.744 66.1932 106.284 66.8826 105.969 67.6413C105.655 68.4 105.493 69.2132 105.493 70.0344C105.493 70.8556 105.655 71.6688 105.969 72.4275C106.284 73.1862 106.744 73.8756 107.325 74.4562L111.744 70.0375L116.169 65.6125ZM120.588 78.875L116.169 83.2937C117.341 84.4635 118.929 85.1205 120.584 85.1205C122.24 85.1205 123.828 84.4635 125 83.2937L120.588 78.875ZM142.7 65.6375C143.281 65.0576 143.742 64.369 144.057 63.6109C144.372 62.8528 144.535 62.0401 144.536 61.2191C144.537 60.3982 144.376 59.5851 144.062 58.8264C143.749 58.0676 143.289 57.378 142.709 56.7969C142.13 56.2158 141.441 55.7546 140.683 55.4396C139.925 55.1247 139.112 54.9621 138.291 54.9612C137.47 54.9604 136.657 55.1212 135.898 55.4345C135.139 55.7479 134.45 56.2076 133.869 56.7875L138.281 61.2125L142.7 65.6375ZM50 93.75V100H100V87.5H50V93.75ZM125 118.75H118.75V131.25H131.25V118.75H125ZM25 131.25H31.25V118.75H18.75V131.25H25ZM100 43.75H93.75C93.75 48.7228 91.7746 53.4919 88.2583 57.0083C84.742 60.5246 79.9728 62.5 75 62.5V75C79.1038 75 83.1674 74.1917 86.9589 72.6212C90.7503 71.0508 94.1953 68.7489 97.0971 65.8471C99.9989 62.9453 102.301 59.5003 103.871 55.7089C105.442 51.9174 106.25 47.8538 106.25 43.75H100ZM75 68.75V62.5C70.0272 62.5 65.2581 60.5246 61.7417 57.0083C58.2254 53.4919 56.25 48.7228 56.25 43.75H43.75C43.75 52.038 47.0424 59.9866 52.9029 65.8471C58.7634 71.7076 66.712 75 75 75V68.75ZM50 43.75H56.25C56.25 38.7772 58.2254 34.0081 61.7417 30.4917C65.2581 26.9754 70.0272 25 75 25V12.5C66.712 12.5 58.7634 15.7924 52.9029 21.6529C47.0424 27.5134 43.75 35.462 43.75 43.75H50ZM75 18.75V25C79.9728 25 84.742 26.9754 88.2583 30.4917C91.7746 34.0081 93.75 38.7772 93.75 43.75H106.25C106.25 35.462 102.958 27.5134 97.0971 21.6529C91.2366 15.7924 83.288 12.5 75 12.5V18.75ZM111.744 70.0375L107.325 74.4562L116.169 83.2937L120.588 78.875L125.006 74.4562L116.169 65.6125L111.744 70.0375ZM120.588 78.875L125 83.3L142.7 65.6375L138.281 61.2125L133.869 56.7875L116.169 74.45L120.588 78.875ZM100 93.75V100C104.973 100 109.742 101.975 113.258 105.492C116.775 109.008 118.75 113.777 118.75 118.75H131.25C131.25 110.462 127.958 102.513 122.097 96.6529C116.237 90.7924 108.288 87.5 100 87.5V93.75ZM50 93.75V87.5C41.712 87.5 33.7634 90.7924 27.9029 96.6529C22.0424 102.513 18.75 110.462 18.75 118.75H31.25C31.25 113.777 33.2254 109.008 36.7417 105.492C40.2581 101.975 45.0272 100 50 100V93.75Z" fill="currentColor"/></svg></span>
+          <h3 class="mt-4 text-lg font-black leading-tight text-brand-primary">Sigue su progreso</h3>
+          <p class="mt-2 text-sm font-semibold leading-relaxed text-brand-navy/70">
+            Consulta logros, puntos y hábitos en tiempo real desde tu panel.
+          </p>
+        </article>
+
+        <article class="card rise p-6 text-center">
+          <span class="tile tile-purple"><svg viewBox="0 0 150 150" fill="none" class="h-10 w-10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M131.25 37.5L98.1687 70.5813C96.9967 71.7529 95.4073 72.4112 93.75 72.4112C92.0927 72.4112 90.5033 71.7529 89.3313 70.5813L79.4187 60.6687C78.2467 59.4971 76.6573 58.8388 75 58.8388C73.3427 58.8388 71.7533 59.4971 70.5813 60.6687L43.75 87.5" stroke="currentColor" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.75 18.75V111.25C18.75 118.25 18.75 121.75 20.1125 124.425C21.3109 126.777 23.2231 128.689 25.575 129.887C28.25 131.25 31.75 131.25 38.75 131.25H131.25" stroke="currentColor" stroke-width="12.5" stroke-linecap="round"/></svg></span>
+          <h3 class="mt-4 text-lg font-black leading-tight text-brand-primary">Estadísticas en tiempo real</h3>
+          <p class="mt-2 text-sm font-semibold leading-relaxed text-brand-navy/70">
+            Consulta el progreso, puntos y misiones completadas cuando quieras.
+          </p>
+        </article>
+
+        <article class="card rise p-6 text-center">
+          <span class="tile tile-amber"><svg viewBox="0 0 150 150" fill="none" class="h-10 w-10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M106.062 90.25C114.625 91.6875 124.062 90.1875 130.687 85.75C139.5 79.875 139.5 70.25 130.687 64.375C124 59.9375 114.438 58.4375 105.875 59.9375M43.75 90.25C35.1875 91.6875 25.75 90.1875 19.125 85.75C10.3125 79.875 10.3125 70.25 19.125 64.375C25.8125 59.9375 35.375 58.4375 43.9375 59.9375M112.5 44.75C112.107 44.6869 111.706 44.6869 111.312 44.75C107.141 44.5992 103.192 42.8326 100.3 39.8235C97.4076 36.8145 95.7984 32.7987 95.8125 28.625C95.8125 19.6875 103 12.5 111.938 12.5C116.214 12.5 120.316 14.1989 123.34 17.2229C126.364 20.2469 128.062 24.3484 128.062 28.625C128.049 32.8013 126.423 36.8109 123.523 39.8159C120.623 42.8209 116.673 44.5888 112.5 44.75ZM37.3125 44.75C37.6875 44.6875 38.125 44.6875 38.5 44.75C42.671 44.5992 46.6201 42.8326 49.5125 39.8235C52.4049 36.8145 54.0141 32.7987 54 28.625C54 19.6875 46.8125 12.5 37.875 12.5C33.5984 12.5 29.4969 14.1989 26.4729 17.2229C23.4489 20.2469 21.75 24.3484 21.75 28.625C21.8125 37.375 28.6875 44.4375 37.3125 44.75ZM75 91.4375C74.6067 91.3744 74.2058 91.3744 73.8125 91.4375C69.6415 91.2867 65.6925 89.5201 62.8 86.511C59.9076 83.502 58.2984 79.4863 58.3125 75.3125C58.3125 66.375 65.5 59.1875 74.4375 59.1875C78.7141 59.1875 82.8156 60.8864 85.8396 63.9104C88.8636 66.9344 90.5625 71.0359 90.5625 75.3125C90.5 84.0625 83.625 91.1875 75 91.4375ZM56.8125 111.125C48 117 48 126.625 56.8125 132.5C66.8125 139.188 83.1875 139.188 93.1875 132.5C102 126.625 102 117 93.1875 111.125C83.25 104.5 66.8125 104.5 56.8125 111.125Z" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <h3 class="mt-4 text-lg font-black leading-tight text-brand-primary">Misiones supervisadas</h3>
+          <p class="mt-2 text-sm font-semibold leading-relaxed text-brand-navy/70">
+            Las tareas fuera de casa siempre requieren acompañamiento de un adulto.
+          </p>
+        </article>
+
+        <article class="card rise p-6 text-center">
+          <span class="tile tile-green"><svg viewBox="0 0 150 150" fill="none" class="h-10 w-10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M77.7624 130.475C76.8462 130.75 75.9253 131.008 74.9999 131.25C65.27 128.726 56.1467 124.272 48.1721 118.153C40.1975 112.034 33.5344 104.374 28.5787 95.6283C23.6229 86.8829 20.4758 77.2306 19.3242 67.2449C18.1725 57.2592 19.04 47.1438 21.8749 37.5C41.347 38.391 60.401 31.6661 74.9999 18.75C89.5989 31.6661 108.653 38.391 128.125 37.5C131.917 50.3949 132.174 64.0718 128.869 77.1M118.75 137.5V100M99.9999 118.75L118.75 100L137.5 118.75" stroke="currentColor" stroke-width="12.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <h3 class="mt-4 text-lg font-black leading-tight text-brand-primary">Seguro y confiable</h3>
+          <p class="mt-2 text-sm font-semibold leading-relaxed text-brand-navy/70">
+            Un entorno protegido, diseñado para niños y aprobado por padres.
+          </p>
+        </article>
+
+        <article class="card rise p-6 text-center">
+          <span class="tile tile-amber"><svg viewBox="0 0 150 150" fill="none" class="h-10 w-10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M64.0187 101.963L37.5 75.4377L46.3375 66.6002L64.0187 84.2752L99.3688 48.9189L108.212 57.7627L64.0187 101.963Z" fill="currentColor"/><path fill-rule="evenodd" clip-rule="evenodd" d="M6.25 75C6.25 37.0313 37.0313 6.25 75 6.25C112.969 6.25 143.75 37.0313 143.75 75C143.75 112.969 112.969 143.75 75 143.75C37.0313 143.75 6.25 112.969 6.25 75ZM75 131.25C67.6131 131.25 60.2986 129.795 53.4741 126.968C46.6495 124.141 40.4485 119.998 35.2252 114.775C30.0019 109.551 25.8586 103.351 23.0318 96.5259C20.2049 89.7014 18.75 82.3869 18.75 75C18.75 67.6131 20.2049 60.2986 23.0318 53.4741C25.8586 46.6495 30.0019 40.4485 35.2252 35.2252C40.4485 30.0019 46.6495 25.8586 53.4741 23.0318C60.2986 20.2049 67.6131 18.75 75 18.75C89.9184 18.75 104.226 24.6763 114.775 35.2252C125.324 45.7742 131.25 60.0816 131.25 75C131.25 89.9184 125.324 104.226 114.775 114.775C104.226 125.324 89.9184 131.25 75 131.25Z" fill="currentColor"/></svg></span>
+          <h3 class="mt-4 text-lg font-black leading-tight text-brand-primary">Apruebas cada recompensa</h3>
+          <p class="mt-2 text-sm font-semibold leading-relaxed text-brand-navy/70">
+            Antes de que tu hijo canjee sus puntos, tú das el visto bueno final.
+          </p>
+        </article>
+
+        <article class="card rise p-6 text-center">
+          <span class="tile tile-pink"><svg viewBox="0 0 150 150" fill="none" class="h-10 w-10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M90.625 117.188H100V107.812H90.625V117.188ZM107.812 117.188H117.188V107.812H107.812V117.188ZM125 117.188H134.375V107.812H125V117.188ZM18.75 131.25V18.75H131.25V73.125C129.271 72.1875 127.24 71.3812 125.156 70.7062C123.073 70.0312 120.938 69.5354 118.75 69.2188V31.25H31.25V118.75H69.0625C69.375 121.042 69.8708 123.229 70.55 125.312C71.2292 127.396 72.0354 129.375 72.9688 131.25H18.75ZM31.25 112.5V118.75V31.25V69.2188V68.75V112.5ZM43.75 106.25H69.2188C69.5312 104.062 70.0271 101.927 70.7062 99.8438C71.3854 97.7604 72.1396 95.7292 72.9688 93.75H43.75V106.25ZM43.75 81.25H81.875C85.2083 78.125 88.9333 75.5208 93.05 73.4375C97.1667 71.3542 101.567 69.9479 106.25 69.2188V68.75H43.75V81.25ZM43.75 56.25H106.25V43.75H43.75V56.25ZM112.5 143.75C103.854 143.75 96.4854 140.702 90.3938 134.606C84.3021 128.51 81.2542 121.142 81.25 112.5C81.2458 103.858 84.2938 96.4896 90.3938 90.3938C96.4938 84.2979 103.863 81.25 112.5 81.25C121.137 81.25 128.508 84.2979 134.613 90.3938C140.717 96.4896 143.762 103.858 143.75 112.5C143.738 121.142 140.69 128.512 134.606 134.613C128.523 140.713 121.154 143.758 112.5 143.75Z" fill="currentColor"/></svg></span>
+          <h3 class="mt-4 text-lg font-black leading-tight text-brand-primary">Personaliza misiones</h3>
+          <p class="mt-2 text-sm font-semibold leading-relaxed text-brand-navy/70">
+            Tu hijo puede proponer misiones personalizadas.
+          </p>
+        </article>
+
+        <article class="card rise p-6 text-center">
+          <span class="tile tile-blue"><svg viewBox="0 0 150 150" fill="none" class="h-10 w-10" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><path d="M96.875 18.75H53.125L43.75 37.5H12.5V125H137.5V37.5H106.25L96.875 18.75Z" stroke="currentColor" stroke-width="12.5"/><path d="M100 78.125C100 84.7554 97.3661 91.1143 92.6777 95.8027C87.9893 100.491 81.6304 103.125 75 103.125C68.3696 103.125 62.0107 100.491 57.3223 95.8027C52.6339 91.1143 50 84.7554 50 78.125C50 71.4946 52.6339 65.1357 57.3223 60.4473C62.0107 55.7589 68.3696 53.125 75 53.125C81.6304 53.125 87.9893 55.7589 92.6777 60.4473C97.3661 65.1357 100 71.4946 100 78.125Z" stroke="currentColor" stroke-width="12.5"/></svg></span>
+          <h3 class="mt-4 text-lg font-black leading-tight text-brand-primary">Evidencia verificable</h3>
+          <p class="mt-2 text-sm font-semibold leading-relaxed text-brand-navy/70">
+            Cada misión se reporta con una foto, así siempre sabes qué hizo tu hijo.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────── Impacto ─────────────── -->
+  <section id="quienes-somos" class="scroll-mt-24">
+    <div class="mx-auto max-w-content px-5 py-14 md:py-20">
+      <h2 class="rule-accent text-2xl font-black md:text-4xl">
+        Un club que <span class="text-brand-primary">mejora los hábitos</span>
+      </h2>
+      <p class="mt-6 max-w-xl text-base leading-relaxed md:text-lg">
+        Cada misión completa es una acción real.<br />
+        Esto es lo que ha logrado la familia <strong class="font-black">Club Blue Planet</strong>.
+      </p>
+
+      <!-- ponytail: figures are placeholders from the mockup — swap for real
+           numbers (or a D1 aggregate) before this goes to a public domain. -->
+      <div class="band mt-10 grid gap-x-10 gap-y-8 rounded-[2rem] px-7 py-10 text-white sm:grid-cols-2 md:px-12">
+        <div class="flex items-center gap-4">
+          <span class="chip"><svg class="h-7 w-7" style="color:#C6E44B" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 20v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0zM22 20v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg></span>
+          <div>
+            <div class="num text-2xl font-black leading-none md:text-3xl">12,400</div>
+            <div class="mt-1.5 text-sm font-semibold text-white/80">Familias en el Club</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 sm:border-l sm:border-white/15 sm:pl-10">
+          <span class="chip"><svg class="h-7 w-7" style="color:#8CDCB0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <path d="M22 4 12 14.01l-3-3" />
+          </svg></span>
+          <div>
+            <div class="num text-2xl font-black leading-none md:text-3xl">89,000</div>
+            <div class="mt-1.5 text-sm font-semibold text-white/80">Misiones completadas</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <span class="chip"><svg class="h-7 w-7" style="color:#FFC978" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+            <path d="M7 11l4.5-8.5a2.5 2.5 0 0 1 4.7 1.6L15.4 9H20a2 2 0 0 1 2 2.4l-1.6 8A2 2 0 0 1 18.4 21H7" />
+          </svg></span>
+          <div>
+            <div class="num text-2xl font-black leading-none md:text-3xl">24,000</div>
+            <div class="mt-1.5 text-sm font-semibold text-white/80">Niños con mejores hábitos</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 sm:border-l sm:border-white/15 sm:pl-10">
+          <span class="chip"><svg class="h-7 w-7" style="color:#FF9EC7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 4h12v6a6 6 0 0 1-12 0V4z" />
+            <path d="M18 5h2.5a2.5 2.5 0 0 1 0 5H18M6 5H3.5a2.5 2.5 0 0 0 0 5H6M9 21h6M12 16v5" />
+          </svg></span>
+          <div>
+            <div class="num text-2xl font-black leading-none md:text-3xl">30,000</div>
+            <div class="mt-1.5 text-sm font-semibold text-white/80">Aventuras por descubrir</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────── Testimonios ─────────────── -->
+  <section>
+    <div class="mx-auto max-w-content px-5 py-14 md:py-20">
+      <h2 class="rule-accent text-2xl font-black md:text-4xl">
+        Lo que dicen otros <span class="text-brand-primary">padres.</span>
+      </h2>
+
+      <!-- ponytail: sample testimonials copied from the mockup. Replace with
+           real, attributable quotes before launch — these read as genuine. -->
+      <div class="mt-10 grid gap-5 md:grid-cols-3">
+        <figure class="card-quote q-amber p-6">
+          <figcaption class="text-sm font-bold text-brand-navy/70">Laura, mamá de Sofía</figcaption>
+          <div class="mt-2 flex gap-1 text-[#E0A008]" aria-label="5 de 5 estrellas">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+          </div>
+          <blockquote class="mt-4 text-[15px] font-semibold leading-relaxed text-brand-navy/80">
+            “Me encanta poder aprobar cada recompensa. Mi hijo aprendió a reciclar sin que se lo tuviera que repetir.”
+          </blockquote>
+        </figure>
+        <figure class="card-quote q-pink p-6">
+          <figcaption class="text-sm font-bold text-brand-navy/70">Daniel, papá de Marco</figcaption>
+          <div class="mt-2 flex gap-1 text-[#E0A008]" aria-label="5 de 5 estrellas">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+          </div>
+          <blockquote class="mt-4 text-[15px] font-semibold leading-relaxed text-brand-navy/80">
+            “Por fin una app donde sé exactamente qué está haciendo mi hijo. Las fotos de evidencia me dan mucha tranquilidad.”
+          </blockquote>
+        </figure>
+        <figure class="card-quote q-green p-6">
+          <figcaption class="text-sm font-bold text-brand-navy/70">Paola, mamá de Lucas</figcaption>
+          <div class="mt-2 flex gap-1 text-[#E0A008]" aria-label="5 de 5 estrellas">
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3 6.5 7 .9-5 4.8 1.3 7L12 17.8 5.7 21.2 7 14.2 2 9.4l7-.9z"/></svg>
+          </div>
+          <blockquote class="mt-4 text-[15px] font-semibold leading-relaxed text-brand-navy/80">
+            “Las estadísticas semanales se volvieron parte de nuestra rutina familiar. Mis hijos compiten sanamente por sus insignias.”
+          </blockquote>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  </div>
+
+  <!-- ─────────────── CTA ─────────────── -->
+  <section class="bg-white px-5 pb-16">
+    <div class="band mx-auto max-w-content overflow-hidden rounded-[2rem] px-7 py-11 text-center">
+      <h2 class="text-lg font-black leading-snug text-white md:text-2xl">
+        Unirse ahora a las familias de Club Blue Planet
+      </h2>
+
+      <div class="mt-7 flex items-center justify-center gap-4">
+        <img src="assets/Leaf-Izq.svg" alt="" class="hidden h-12 w-12 brightness-0 invert sm:block" />
+        <a href="https://clubblueplanet-app.ealbinu.workers.dev/#/registro"
+           class="btn btn-white inline-flex items-center gap-3 rounded-full px-10 py-4 text-base font-black uppercase tracking-wide text-brand-navy">
+          Registrarse ahora
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12h13M13 6l6 6-6 6" />
+          </svg>
+        </a>
+        <img src="assets/Leaf-Der.svg" alt="" class="hidden h-12 w-12 brightness-0 invert sm:block" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────── Footer ─────────────── -->
+  <footer class="bg-brand-deep text-white">
+    <div class="mx-auto max-w-content px-5 py-12">
+      <div class="grid gap-9 md:grid-cols-4">
+        <div>
+          <img src="assets/Logo-Footer.svg" alt="Club Blue Planet" class="h-16 w-auto" />
+          <p class="mt-4 text-sm font-bold leading-relaxed text-white/70">
+            Pequeñas acciones.<br />Grandes aventuras.
+          </p>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-black uppercase tracking-widest text-white/50">Explora</h3>
+          <ul class="mt-4 space-y-2.5 text-sm font-semibold">
+            <li><a href="#que-es" class="text-white/85 transition hover:text-brand-lime">¿Qué es Club Blue Planet?</a></li>
+            <li><a href="#beneficios" class="text-white/85 transition hover:text-brand-lime">Beneficios</a></li>
+            <li><a href="#quienes-somos" class="text-white/85 transition hover:text-brand-lime">¿Quiénes somos?</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-black uppercase tracking-widest text-white/50">Familias</h3>
+          <ul class="mt-4 space-y-2.5 text-sm font-semibold">
+            <li><a href="https://clubblueplanet-app.ealbinu.workers.dev/#/login" class="text-white/85 transition hover:text-brand-lime">Iniciar sesión</a></li>
+            <li><a href="https://clubblueplanet-app.ealbinu.workers.dev/#/registro" class="text-white/85 transition hover:text-brand-lime">Crear cuenta</a></li>
+            <li><a href="https://clubblueplanet-app.ealbinu.workers.dev/#/login" class="text-white/85 transition hover:text-brand-lime">Seguridad y privacidad</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-black uppercase tracking-widest text-white/50">Síguenos</h3>
+          <div class="mt-4 flex gap-3">
+            <a href="#" aria-label="Facebook" class="transition hover:opacity-80">
+              <img src="assets/facebook.svg" alt="" class="h-10 w-10" />
+            </a>
+            <a href="#" aria-label="Instagram" class="transition hover:opacity-80">
+              <img src="assets/instagram.svg" alt="" class="h-10 w-10" />
+            </a>
+            <a href="#" aria-label="TikTok" class="transition hover:opacity-80">
+              <img src="assets/tiktok.svg" alt="" class="h-10 w-10" />
+            </a>
+            <a href="#" aria-label="YouTube" class="transition hover:opacity-80">
+              <img src="assets/youtube.svg" alt="" class="h-10 w-10" />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-10 border-t border-white/10 pt-6 text-center text-xs font-semibold text-white/55">
+        © 2026 Club Blue Planet. Todos los derechos reservados.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    /*
+      One authored moment: the benefit tiles assemble on first scroll. The page
+      ships visible; this script opts into the animation, so anything that stops
+      it (no JS, no IntersectionObserver, reduced motion) leaves a finished page
+      rather than eight invisible cards.
+    */
+    (function () {
+      if (!('IntersectionObserver' in window)) return
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+      document.documentElement.classList.add('js')
+
+      var items = document.querySelectorAll('.rise')
+      items.forEach(function (el, i) { el.style.setProperty('--i', i % 4) })
+
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return
+          e.target.classList.add('in')
+          io.unobserve(e.target)          // plays once, never on the way back up
+        })
+      }, { rootMargin: '0px 0px -12% 0px' })
+
+      items.forEach(function (el) { io.observe(el) })
+    })();
+
+    /*
+      Scroll sweep fallback. Browsers with `animation-timeline: view()` already
+      run the sweep off the main thread from CSS; this only takes over for the
+      ones that don't (Firefox today), so nobody gets both.
+    */
+    (function () {
+      if (CSS.supports('animation-timeline: view()')) return
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+      var phones = [].slice.call(document.querySelectorAll('.phone'))
+      if (!phones.length) return
+
+      var queued = false
+
+      function sweep () {
+        queued = false
+        var vh = window.innerHeight
+        phones.forEach(function (el) {
+          var r = el.getBoundingClientRect()
+          if (r.bottom < 0 || r.top > vh) return          // off-screen: skip the work
+          // 0 as it starts entering, 1 as it finishes leaving — the same span
+          // `animation-range: cover` covers.
+          var p = (vh - r.top) / (vh + r.height)
+          p = p < 0 ? 0 : p > 1 ? 1 : p
+          var max = parseFloat(getComputedStyle(el).getPropertyValue('--ry-max')) || 30
+          el.style.setProperty('--ry', ((0.5 - p) * 2 * max).toFixed(2) + 'deg')
+          var glass = el.querySelector('.glass')
+          if (glass) glass.style.setProperty('--sheen', (100 - p * 100).toFixed(1) + '%')
+        })
+      }
+
+      function onScroll () {
+        if (queued) return
+        queued = true
+        requestAnimationFrame(sweep)
+      }
+
+      addEventListener('scroll', onScroll, { passive: true })
+      addEventListener('resize', onScroll, { passive: true })
+      sweep()
+    })();
+  </script>
+</body>
+</html>
