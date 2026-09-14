@@ -66,7 +66,7 @@ import { useRouter } from 'vue-router'
 import AuthShell from '@/components/AuthShell.vue'
 import { MailIcon, LockIcon, OrnIcon, KidIcon } from '@/components/authIcons'
 import { signIn, authErrorMessage } from '@/lib/auth'
-import { invalidateSession } from '@/lib/session'
+import { enterApp, ENTER_FAILED } from '@/lib/session'
 
 const router = useRouter()
 
@@ -87,12 +87,15 @@ async function onSubmit () {
     rememberMe: remember.value,
   })
 
-  loading.value = false
   if (err) {
+    loading.value = false
     error.value = authErrorMessage(err)
     return
   }
-  invalidateSession()
-  router.push('/')
+  // "Entrando…" until the app is really open; if it can't open, say so.
+  if (!(await enterApp(router, '/'))) {
+    loading.value = false
+    error.value = ENTER_FAILED
+  }
 }
 </script>

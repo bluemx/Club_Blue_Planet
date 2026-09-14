@@ -40,3 +40,20 @@ export function invalidateSession () {
   inFlight = null
   currentUser.value = null
 }
+
+export const ENTER_FAILED =
+  'Entraste, pero la app no pudo abrirse. Recarga la página e inténtalo otra vez. ' +
+  'Si sigue igual, revisa que tu navegador no esté en modo privado ni bloqueando cookies.'
+
+/**
+ * After signing in: open the app and say whether it opened. A jump that fails
+ * (a screen that won't load after a deploy, a browser that didn't keep the
+ * session cookie and gets sent back) used to leave the sign-in screen sitting
+ * on "Entrando…" with no word.
+ */
+export async function enterApp (router, path) {
+  invalidateSession()
+  const from = router.currentRoute.value.path
+  await router.push(path).catch(() => {})
+  return router.currentRoute.value.path !== from
+}

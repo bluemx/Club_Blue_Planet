@@ -109,7 +109,7 @@ import AuthShell from '@/components/AuthShell.vue'
 import LegalDialog from '@/components/LegalDialog.vue'
 import { MailIcon, LockIcon, UserIcon, ShieldIcon, OrnIcon } from '@/components/authIcons'
 import { signUp, authErrorMessage } from '@/lib/auth'
-import { invalidateSession } from '@/lib/session'
+import { enterApp, ENTER_FAILED } from '@/lib/session'
 
 const router = useRouter()
 
@@ -168,13 +168,16 @@ async function onSubmit () {
     password: password.value,
   })
 
-  loading.value = false
   if (err) {
+    loading.value = false
     error.value = authErrorMessage(err)
     return
   }
-  invalidateSession()
-  router.push('/')
+  // The account exists either way; if the app can't open, say so.
+  if (!(await enterApp(router, '/'))) {
+    loading.value = false
+    error.value = ENTER_FAILED
+  }
 }
 </script>
 
