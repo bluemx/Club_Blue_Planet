@@ -51,7 +51,7 @@
               unelevated rounded no-caps size="sm"
               color="primary"
               icon="photo_camera"
-              label="Subir foto"
+              label="Tomar foto"
               :loading="busyId === a.id"
               @click="pick(a)"
             />
@@ -63,30 +63,27 @@
         </MissionRow>
         </TransitionGroup>
 
-        <!-- capture opens the camera straight away on a phone -->
-        <input
-          ref="fileInput"
-          type="file"
-          accept="image/*"
-          capture="environment"
-          class="hidden"
-          @change="upload"
-        />
-
-        <p v-if="uploadError" class="bp-auth-error">{{ uploadError }}</p>
 
         <p v-if="!visible.length" class="bp-hint">
           {{ EMPTY[filter] }}
         </p>
       </template>
     </div>
+
+    <PhotoStudio
+      :model-value="!!target"
+      :title="target?.title"
+      :send="send"
+      @update:model-value="(v) => { if (!v) target = null }"
+    />
   </q-page>
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, nextTick, onBeforeUnmount } from 'vue'
 import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import PhotoStudio from '@/components/PhotoStudio.vue'
 import { assignments, uploadEvidence, useResource } from '@/lib/api'
 import { onNotification } from '@/lib/notifications'
 import { flyTo } from '@/lib/fly'
@@ -135,37 +132,28 @@ function setRow (id, comp) {
 let revisionTab = null
 const bumpRevision = ref(0)
 
-const fileInput = ref(null)
+// The mission whose photo is being taken; the studio is open while it's set.
 const target = ref(null)
-const uploadError = ref('')
 
 function pick (a) {
   target.value = a
-  uploadError.value = ''
-  fileInput.value.value = ''   // re-picking the same file must still fire change
-  fileInput.value.click()
 }
 
-async function upload (event) {
-  const file = event.target.files?.[0]
+/** Called by the studio; a throw keeps it open, stickers and all, to retry. */
+async function send (file) {
   const a = target.value
-  if (!file || !a) return
-
   busyId.value = a.id
-  uploadError.value = ''
-
   try {
     await uploadEvidence(a.id, file)
-    // In place, like the parent's approvals: the mission heads for "En
-    // revisión" instead of the whole list reloading under the kid's finger.
-    flyTo(rows.get(a.id), revisionTab).then(() => bumpRevision.value++)
-    Object.assign(a, { status: 'revision', hasPhoto: 1, reportedAt: Date.now() })
-  } catch (err) {
-    uploadError.value = err.data?.error || 'No se pudo subir la foto.'
   } finally {
     busyId.value = null
-    target.value = null
   }
+  target.value = null
+  await nextTick()
+  // In place, like the parent's approvals: the mission heads for "En
+  // revisión" instead of the whole list reloading under the kid's finger.
+  flyTo(rows.get(a.id), revisionTab).then(() => bumpRevision.value++)
+  Object.assign(a, { status: 'revision', hasPhoto: 1, reportedAt: Date.now() })
 }
 </script>
 

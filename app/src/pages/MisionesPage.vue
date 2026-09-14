@@ -65,30 +65,42 @@
           :ref="(el) => setRow(a.id, el)"
           :by="{ id: a.childId, avatar: a.childAvatar }"
           :title="a.title"
-          :subtitle="`${a.childName} · ${STATE[a.status].label}`"
+          :subtitle="`${a.childName} · ${needsLook(a) ? '📷 Mandó una foto, ¡revísala!' : STATE[a.status].label}`"
           :icon="a.icon"
           :color="a.color"
           :points="a.points"
+          :class="{ 'bp-row--photo': needsLook(a) }"
         >
           <template #trailing>
-            <q-btn
+            <!-- The photo itself, not an icon: it's what the parent approves. -->
+            <button
               v-if="a.hasPhoto"
-              flat round dense
-              icon="photo"
-              color="primary"
+              type="button"
+              class="bp-thumb"
+              :class="{ 'bp-thumb--new': needsLook(a) }"
+              :aria-label="`Ver la foto de ${a.childName}`"
               @click="showPhoto(a)"
             >
-              <q-tooltip>Ver la foto</q-tooltip>
-            </q-btn>
+              <img
+                v-if="!brokenThumbs.has(a.id)"
+                :src="photoUrl(a)"
+                crossorigin="use-credentials"
+                loading="lazy"
+                alt=""
+                @error="brokenThumbs.add(a.id)"
+              />
+              <q-icon v-else name="photo" size="26px" />
+              <span class="bp-thumb-badge"><q-icon name="visibility" size="12px" />Ver</span>
+            </button>
             <q-btn
               round unelevated size="sm"
               :color="a.status === 'lista' ? 'secondary' : 'grey-3'"
               :text-color="a.status === 'lista' ? 'white' : 'grey-6'"
               icon="check"
-              :aria-label="a.status === 'lista' ? 'Deshacer aprobación' : 'Aprobar'"
-              @click="toggle(a)"
+              :aria-label="checkLabel(a)"
+              @click="needsLook(a) ? showPhoto(a) : toggle(a)"
             >
-              <q-tooltip>{{ a.status === 'lista' ? 'Deshacer aprobación' : 'Aprobar' }}</q-tooltip>
+              <q-tooltip>{{ checkLabel(a) }}</q-tooltip>
             </q-btn>
           </template>
         </MissionRow>
@@ -133,7 +145,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onBeforeUnmount } from 'vue'
 import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { assignments, setAssignmentStatus, evidenceUrl, useResource } from '@/lib/api'
@@ -228,10 +240,18 @@ const photoOpen = ref(false)
 const viewing = ref(null)
 let approveAfterClose = null
 
-// Cache-bust so a replaced photo isn't served from the previous view.
-const photoSrc = computed(() =>
-  viewing.value ? `${evidenceUrl(viewing.value.id)}?v=${viewing.value.reportedAt || 0}` : ''
-)
+// Cache-bust so a replaced photo isn't served from the previous view. The
+// thumbnail and the viewer share this URL, so opening it reuses the download.
+const photoUrl = (a) => `${evidenceUrl(a.id)}?v=${a.reportedAt || 0}`
+const photoSrc = computed(() => (viewing.value ? photoUrl(viewing.value) : ''))
+
+// A photo waiting for review: the check opens it first, approval happens there.
+const needsLook = (a) => a.status === 'revision' && !!a.hasPhoto
+const checkLabel = (a) =>
+  a.status === 'lista' ? 'Deshacer aprobación' : needsLook(a) ? 'Ver la foto y aprobar' : 'Aprobar'
+
+// Thumbnails that failed to load fall back to an icon.
+const brokenThumbs = reactive(new Set())
 
 function showPhoto (a) {
   viewing.value = a
@@ -250,3 +270,70 @@ function onPhotoHidden () {
   if (a && a.status !== 'lista') toggle(a)
 }
 </script>
+
+<style scoped>
+/* A photo waiting for review stands out from the rest of the list. */
+.bp-row--photo {
+  border-color: #FFD27A;
+  background: linear-gradient(90deg, #FFF8E8 0%, #FFFFFF 70%);
+  box-shadow: 0 12px 24px -16px rgba(240, 150, 0, .7);
+}
+
+.bp-thumb {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  margin-right: 10px;
+  padding: 0;
+  border: 3px solid #fff;
+  border-radius: 16px;
+  background: #EAF2FF;
+  box-shadow: 0 2px 4px rgba(11, 43, 107, .12), 0 10px 18px -8px rgba(20, 103, 228, .45);
+  color: #1467E4;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform .18s cubic-bezier(.16, 1, .3, 1);
+}
+
+.bp-thumb:hover { transform: translateY(-2px) rotate(-2deg); }
+.bp-thumb:active { transform: translateY(1px); }
+
+.bp-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bp-thumb-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(11, 42, 91, .78);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  transform: translateX(-50%);
+}
+
+/* New evidence pulses until the parent opens it. */
+.bp-thumb--new { animation: bp-thumb-ping 1.8s ease-out infinite; }
+
+@keyframes bp-thumb-ping {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 176, 32, .75), 0 10px 18px -8px rgba(240, 150, 0, .5); }
+  70%  { box-shadow: 0 0 0 10px rgba(255, 176, 32, 0), 0 10px 18px -8px rgba(240, 150, 0, .5); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 176, 32, 0), 0 10px 18px -8px rgba(240, 150, 0, .5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bp-thumb--new { animation: none; box-shadow: 0 0 0 3px #FFB020; }
+  .bp-thumb:hover, .bp-thumb:active { transform: none; }
+}
+</style>

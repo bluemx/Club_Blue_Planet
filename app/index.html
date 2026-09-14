@@ -11,7 +11,7 @@
 
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' <%= process.env.API_ORIGIN || 'https://clubblueplanet.ealbinu.workers.dev http://localhost:8787' %><% if (ctx.dev) { %> ws://localhost:*<% } %>;<% if (ctx.dev) { %> worker-src 'self' blob:;<% } %>"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: <%= process.env.API_ORIGIN || 'https://clubblueplanet.ealbinu.workers.dev http://localhost:8787' %>; connect-src 'self' <%= process.env.API_ORIGIN || 'https://clubblueplanet.ealbinu.workers.dev http://localhost:8787' %><% if (ctx.dev) { %> ws://localhost:*<% } %>;<% if (ctx.dev) { %> worker-src 'self' blob:;<% } %>"
     />
 
     <!-- Brand colour for the mobile browser chrome and Android task switcher -->
