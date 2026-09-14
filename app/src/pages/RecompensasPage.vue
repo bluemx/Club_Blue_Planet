@@ -125,16 +125,14 @@
 
       <!-- Everything already resolved, paginated -->
       <template v-else>
-        <q-select
+        <KidPicker
           v-if="children.length > 1"
           v-model="filterChild"
-          :options="[{ id: '', name: 'Todos los hijos' }, ...children]"
-          option-value="id"
-          option-label="name"
-          emit-value map-options
-          outlined dense rounded
-          class="bp-field q-mb-md"
-          @update:model-value="goToPage(0)"
+          :children="children"
+          allow-all
+          label="Filtrar por hijo"
+          class="q-mb-sm"
+          @change="goToPage(0)"
         />
 
         <q-inner-loading :showing="loadingHistory" />
@@ -261,6 +259,7 @@ import { ref, computed, onBeforeUnmount } from 'vue'
 import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import GrantRewardDialog from '@/components/GrantRewardDialog.vue'
+import KidPicker from '@/components/KidPicker.vue'
 import { rewards, redemptions, summary, resolveRedemption, useResource } from '@/lib/api'
 import { apiFetch } from '@/lib/auth'
 import { onNotification } from '@/lib/notifications'

@@ -106,7 +106,8 @@ const ways = [
   padding: 10px 4px;
   border: 1px solid #EEF3FB;
   border-radius: 18px;
-  background: #fff;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F5F9FF 100%);
+  box-shadow: inset 0 -2px 0 rgba(20, 103, 228, .08), 0 8px 16px -10px rgba(20, 103, 228, .35);
   cursor: pointer;
   font-family: inherit;
   transition: border-color .18s, transform .18s;
