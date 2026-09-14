@@ -111,9 +111,10 @@ const busyId = ref(null)
 const { data, loading, error, reload } = useResource(assignments)
 const list = computed(() => data.value?.assignments ?? [])
 
-// A new mission or an approval changes this list; refresh it in place.
+// A new mission, an accepted idea (it's assigned to them) or an approval
+// changes this list; refresh it in place.
 const off = onNotification((n) => {
-  if (n.kind === 'asignada' || n.kind === 'aprobada') reload({ quiet: true })
+  if (['asignada', 'aceptada', 'aprobada'].includes(n.kind)) reload({ quiet: true })
 })
 onBeforeUnmount(off)
 
