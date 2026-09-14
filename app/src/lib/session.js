@@ -10,15 +10,20 @@ let loadedAt = 0
 // time — but it can't be cached forever either, or a session that expires or
 // is revoked server-side keeps navigating as valid until a full reload.
 const TTL_MS = 30_000
+const SESSION_TIMEOUT_MS = 6_000
 
 /** Cached session lookup, refreshed at most once every TTL_MS. */
 export async function fetchSession () {
   if (loadedAt && Date.now() - loadedAt < TTL_MS) return currentUser.value
   if (inFlight) return inFlight
 
-  inFlight = apiFetch('/api/me')
+  // Bounded: every navigation waits on this, and a request that hangs (a phone
+  // coming back from the background, a network switch) froze every button.
+  const signal = typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(SESSION_TIMEOUT_MS) : undefined
+  inFlight = apiFetch('/api/me', { signal })
     .then(({ user }) => user)
-    .catch(() => null)
+    // Only the server saying no signs you out. Slow or offline: keep who we had.
+    .catch((err) => (err.status ? null : currentUser.value))
     .then((user) => {
       currentUser.value = user
       loadedAt = Date.now()
