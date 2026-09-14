@@ -113,6 +113,33 @@ function celebrateForKid (n) {
   })
 }
 
+// The API writes the title as "¡Misión aprobada! +N puntos"; the points come from there.
+const pointsOf = (n) => Number(/\+(\d+)/.exec(n.title)?.[1] ?? 0)
+
+/*
+ * A parent approved: the kid's payoff for doing the mission, with the points.
+ * Several at once (the app was closed) make one moment with the total, not a
+ * queue of them.
+ */
+function celebrateApprovals (list) {
+  if (!list.length) return
+  list.forEach(n => markCelebrated(n.id))
+  const points = list.reduce((sum, n) => sum + pointsOf(n), 0)
+  if (list.length === 1) {
+    const [n] = list
+    return celebrate({ icon: n.icon || 'verified', color: n.color || 'green', title: '¡Misión aprobada!', detail: n.body || undefined, points })
+  }
+  const names = list.map(n => n.body).filter(Boolean)
+  const shown = names.slice(0, 2).join(', ')
+  celebrate({
+    icon: 'verified',
+    color: 'green',
+    title: `¡${list.length} misiones aprobadas!`,
+    detail: names.length > 2 ? `${shown} y ${names.length - 2} más.` : `${shown}.`,
+    points,
+  })
+}
+
 /*
  * A badge that opens an avatar piece gets its own moment: the kid's face,
  * already wearing it. Remembered per kid on this device. The first run takes
@@ -155,20 +182,25 @@ onMounted(() => {
   // next time the kid opens it — once per device.
   startNotifications().then(() => {
     if (!isKid.value) return
-    announceUnlocks()
-    notifications.value
-      .filter(n => n.kind === 'premio' && !n.readAt && !wasCelebrated(n.id) &&
+    const unseen = (kind) => notifications.value
+      .filter(n => n.kind === kind && !n.readAt && !wasCelebrated(n.id) &&
         Date.now() - n.createdAt < CELEBRATE_WINDOW_MS)
       .reverse()
-      .forEach(celebrateForKid)
+    celebrateApprovals(unseen('aprobada'))
+    unseen('premio').forEach(celebrateForKid)
+    announceUnlocks()
   })
 
   offToast = onNotification((n) => {
     // For a kid, getting the reward is the payoff of the whole app: it takes
     // the stage instead of a toast.
     if (n.kind === 'premio' && isKid.value) return celebrateForKid(n)
-    // An approval can complete a badge, and a badge can open a piece.
-    if (n.kind === 'aprobada' && isKid.value) announceUnlocks()
+    if (n.kind === 'aprobada' && isKid.value) {
+      celebrateApprovals([n])
+      // An approval can complete a badge, and a badge can open a piece.
+      announceUnlocks()
+      return
+    }
 
     const k = kindOf(n)
     $q.notify({
