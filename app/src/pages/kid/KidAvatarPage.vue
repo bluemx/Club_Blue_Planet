@@ -36,15 +36,25 @@
           type="button"
           role="option"
           class="bp-av-option"
-          :class="{ 'is-on': (draft[part.key] ?? null) === v, 'is-swatch': part.swatch }"
+          :class="{ 'is-on': (draft[part.key] ?? null) === v, 'is-swatch': part.swatch, 'is-locked': isLocked(part.key, v) }"
           :aria-selected="(draft[part.key] ?? null) === v"
-          :aria-label="v === null ? 'Ninguno' : `${part.label} ${v}`"
+          :aria-label="optionLabel(v)"
           @click="choose(v)"
         >
           <span v-if="part.swatch" class="bp-av-swatch" :style="{ background: `#${v}` }" />
           <span v-else-if="v === null" class="bp-av-none"><q-icon name="block" size="26px" /></span>
           <img v-else :src="thumb(v)" alt="" loading="lazy" draggable="false" />
+          <span v-if="isLocked(part.key, v)" class="bp-av-lock"><q-icon name="lock" size="16px" /></span>
         </button>
+      </div>
+
+      <!-- What a locked piece needs, and how close the kid is. -->
+      <div v-if="hint" class="bp-av-hint">
+        <q-icon name="lock_open" size="22px" />
+        <span>
+          <strong>{{ hint.title }}</strong>: gana la insignia «{{ hint.badge }}».
+          <template v-if="hint.need"> Llevas {{ hint.progress }} de {{ hint.need }}.</template>
+        </span>
       </div>
 
       <p v-if="error" class="bp-auth-error q-mt-sm">{{ error }}</p>
@@ -60,9 +70,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
-import { PARTS, parseAvatar, defaultAvatar, randomAvatar, avatarUri } from '@/lib/avatar'
+import {
+  PARTS, parseAvatar, defaultAvatar, randomAvatar, avatarUri, unlockOf, pieceTitle,
+} from '@/lib/avatar'
 import { currentUser } from '@/lib/session'
-import { saveAvatar } from '@/lib/api'
+import { apiFetch } from '@/lib/auth'
+import { saveAvatar, useResource } from '@/lib/api'
 
 const me = currentUser
 
@@ -83,14 +96,36 @@ const saving = ref(false)
 const saved = ref(false)
 const error = ref('')
 
+// Earned badges open pieces. Until they load, nothing that needs one is open.
+const { data: badgeData } = useResource(() => apiFetch('/api/badges'))
+const badges = computed(() => Object.fromEntries((badgeData.value?.badges ?? []).map(b => [b.id, b])))
+const isLocked = (key, value) => {
+  const badge = value && unlockOf(key, value)
+  return !!badge && !badges.value[badge]?.earned
+}
+const optionLabel = (v) => {
+  if (v === null) return 'Ninguno'
+  const name = part.value.layer ? pieceTitle(part.value.key, v) : `${part.value.label} ${v}`
+  return isLocked(part.value.key, v) ? `${name} (bloqueado)` : name
+}
+
+const hint = ref(null)
+
 function choose (v) {
+  if (isLocked(part.value.key, v)) {
+    const b = badges.value[unlockOf(part.value.key, v)]
+    hint.value = { title: pieceTitle(part.value.key, v), badge: b?.label ?? 'una insignia', progress: b?.progress, need: b?.need }
+    return
+  }
+  hint.value = null
   draft.value = { ...draft.value, [part.value.key]: v }
   pop.value++
   saved.value = false
 }
 
 function shuffle () {
-  draft.value = randomAvatar()
+  hint.value = null
+  draft.value = randomAvatar((key, value) => !isLocked(key, value))
   pop.value++
   saved.value = false
 }
@@ -210,6 +245,43 @@ async function save () {
 }
 
 .bp-av-option:active { transform: scale(.94); }
+
+.bp-av-option { position: relative; }
+
+.bp-av-option.is-locked img {
+  filter: grayscale(1);
+  opacity: .45;
+}
+
+.bp-av-lock {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #0B2A5B;
+  color: #FFC531;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.bp-av-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 11px 13px;
+  border-radius: 16px;
+  background: #FFF6E0;
+  color: #7A5400;
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.bp-av-hint .q-icon { flex: none; color: #C98A0B; }
 
 .bp-av-option.is-on {
   border-color: #1467E4;

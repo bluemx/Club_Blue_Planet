@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" data-name="Moño">
   <!-- Bow, top right, clear of the eyes -->
   <g stroke="#1A1A1A" stroke-width="8" stroke-linejoin="round" transform="rotate(18 300 66)">
     <path d="M300 66 C270 30 236 34 238 66 C236 98 270 102 300 66 Z" fill="#FF82B6"/>

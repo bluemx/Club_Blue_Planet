@@ -21,6 +21,24 @@ La cara la dibuja DiceBear («Adventurer Neutral»). Todo lo que va encima
   pelo). Categorías nuevas van al final.
 - Archivos o carpetas que empiezan con `_` se ignoran.
 
+## Nombre y desbloqueo
+
+En la etiqueta `<svg>` de la pieza:
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400"
+     data-name="Banda deportiva" data-unlock="atleta">
+```
+
+- `data-name` — cómo la ve el niño. Sin él, se usa el nombre del archivo.
+- `data-unlock` — la insignia que la desbloquea. Sin él, la pieza es libre.
+  Ids válidos (los define la API, `BADGES` en `api/src/routes.js`):
+  `explorador`, `orden`, `manos`, `lector`, `atleta`, `imparable`.
+
+Cuando un niño gana esa insignia, la app se lo celebra con su cara ya
+llevando la pieza. El candado vive en la app (es cosmético): los puntos y los
+premios sí los protege el servidor.
+
 ## Estilo
 
 Para que case con la cara: contorno `#1A1A1A` de 8 px, uniones redondeadas,

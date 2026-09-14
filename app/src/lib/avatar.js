@@ -10,6 +10,9 @@ const enumOf = (key) => [...(props[key].items?.enum ?? props[key].default)]
 // The face fills the circle, so its background *is* the skin.
 const SKIN = ['fde2c8', 'f2d3b1', 'ecad80', 'd08b5b', '9e5622', '763900']
 
+const titleCase = (s) => s.charAt(0).toUpperCase() + s.slice(1).replace(/[-_]/g, ' ')
+const attr = (tag, name) => tag.match(new RegExp(`\\s${name}="([^"]*)"`))?.[1] ?? null
+
 // ---------------------------------------------------------------- layers
 
 /*
@@ -18,6 +21,10 @@ const SKIN = ['fde2c8', 'f2d3b1', 'ecad80', 'd08b5b', '9e5622', '763900']
  * adds one by dropping a file in — no code, and no API change (the API checks
  * key shape, not a fixed list). Files or folders starting with "_" are skipped
  * (the template lives there).
+ *
+ * The root <svg> may carry:
+ *   data-name="Corona"         what the kid sees
+ *   data-unlock="imparable"    the badge id that unlocks it (see BADGES in the API)
  */
 const files = import.meta.glob('../assets/avatar/*/*.svg', { query: '?raw', import: 'default', eager: true })
 
@@ -25,9 +32,13 @@ const LAYERS = {}
 for (const [path, raw] of Object.entries(files)) {
   const [, category, name] = path.match(/avatar\/([^/]+)\/([^/]+)\.svg$/) ?? []
   if (!category || category.startsWith('_') || name.startsWith('_')) continue
-  // Keep only what's inside <svg>…</svg>; it is appended into the face's own SVG.
-  const inner = raw.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '')
-  ;(LAYERS[category] ??= {})[name] = inner
+  const root = raw.match(/<svg[^>]*>/)?.[0] ?? ''
+  ;(LAYERS[category] ??= {})[name] = {
+    // Only what's inside <svg>…</svg>; it is appended into the face's own SVG.
+    inner: raw.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, ''),
+    title: attr(root, 'data-name') ?? titleCase(name),
+    unlock: attr(root, 'data-unlock'),
+  }
 }
 
 const LAYER_LABELS = { peinados: 'Peinados', sombreros: 'Sombreros', accesorios: 'Accesorios' }
@@ -35,7 +46,18 @@ const LAYER_LABELS = { peinados: 'Peinados', sombreros: 'Sombreros', accesorios:
 const LAYER_ORDER = ['peinados', 'accesorios', 'sombreros']
 const rank = (k) => (LAYER_ORDER.includes(k) ? LAYER_ORDER.indexOf(k) : LAYER_ORDER.length)
 const layerKeys = Object.keys(LAYERS).sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
-const titleCase = (s) => s.charAt(0).toUpperCase() + s.slice(1).replace(/[-_]/g, ' ')
+
+/** Every piece of ours, with what it needs. `id` is "category/value". */
+export const PIECES = layerKeys.flatMap(key =>
+  Object.entries(LAYERS[key]).map(([value, p]) => ({
+    id: `${key}/${value}`, key, value, title: p.title, unlock: p.unlock,
+  }))
+)
+
+/** The badge id a piece needs, or null if it's free (and for face parts). */
+export const unlockOf = (key, value) => LAYERS[key]?.[value]?.unlock ?? null
+export const pieceTitle = (key, value) => LAYERS[key]?.[value]?.title ?? value
+export const piecesUnlockedBy = (badgeId) => PIECES.filter(p => p.unlock === badgeId)
 
 // ----------------------------------------------------------------- parts
 
@@ -52,7 +74,10 @@ export const PARTS = [
   ...layerKeys.map(key => ({
     key,
     label: LAYER_LABELS[key] ?? titleCase(key),
-    values: [null, ...Object.keys(LAYERS[key]).sort((a, b) => a.localeCompare(b, 'es', { numeric: true }))],
+    // Free pieces first, then the ones to earn — a kid sees what they can wear now.
+    values: [null, ...Object.keys(LAYERS[key]).sort((a, b) =>
+      Number(!!LAYERS[key][a].unlock) - Number(!!LAYERS[key][b].unlock) ||
+      a.localeCompare(b, 'es', { numeric: true }))],
     layer: true,
   })),
 ]
@@ -91,13 +116,17 @@ export function defaultAvatar (seed = 'club') {
   })
 }
 
-/** "Sorpréndeme": fully random, glasses and our own pieces now and then. */
-export function randomAvatar () {
+/**
+ * "Sorpréndeme": fully random, glasses and our pieces now and then — only
+ * pieces `canUse(key, value)` allows, so it never dresses a kid in a locked hat.
+ */
+export function randomAvatar (canUse = () => true) {
   const any = (list) => list[Math.floor(Math.random() * list.length)]
   const avatar = faceWith(any)
   if (Math.random() < 0.25) avatar.glasses = any(byKey.glasses.slice(1))
   for (const key of layerKeys) {
-    if (Math.random() < 0.45) avatar[key] = any(byKey[key].slice(1))
+    const open = byKey[key].slice(1).filter(v => canUse(key, v))
+    if (open.length && Math.random() < 0.45) avatar[key] = any(open)
   }
   return avatar
 }
@@ -134,7 +163,7 @@ export function avatarUri (value, seed, extra = null) {
   if (!uri) {
     let svg = createAvatar(neutral, faceOptions(avatar, extra)).toString()
     if (!extra) {
-      const layers = layerKeys.map(k => avatar[k] && LAYERS[k]?.[avatar[k]]).filter(Boolean)
+      const layers = layerKeys.map(k => avatar[k] && LAYERS[k]?.[avatar[k]]?.inner).filter(Boolean)
       if (layers.length) svg = svg.replace(/<\/svg>\s*$/, `${layers.join('')}</svg>`)
     }
     uri = `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`

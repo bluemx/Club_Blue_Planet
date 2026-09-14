@@ -42,6 +42,9 @@
           </span>
           <span class="bp-badge-label">{{ b.label }}</span>
           <span v-if="!b.earned" class="bp-badge-progress">{{ b.progress }}/{{ b.need }}</span>
+          <span v-if="unlocks(b.id)" class="bp-badge-unlock" :class="{ 'is-open': b.earned }">
+            <q-icon :name="b.earned ? 'lock_open' : 'lock'" size="11px" /> {{ unlocks(b.id) }}
+          </span>
         </div>
       </div>
     </div>
@@ -79,6 +82,7 @@ import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import KidAvatar from '@/components/KidAvatar.vue'
 import { currentUser as me } from '@/lib/session'
+import { piecesUnlockedBy } from '@/lib/avatar'
 import { apiFetch } from '@/lib/auth'
 import { assignments, summary, useResource } from '@/lib/api'
 
@@ -87,6 +91,13 @@ const { data: assignData } = useResource(assignments)
 const { data: summaryData } = useResource(summary)
 
 const badges = computed(() => badgeData.value?.badges ?? [])
+
+// The avatar pieces a badge opens, as a short line under it.
+const listFmt = new Intl.ListFormat('es', { type: 'conjunction' })
+const unlocks = (id) => {
+  const names = piecesUnlockedBy(id).map(p => p.title)
+  return names.length ? listFmt.format(names) : ''
+}
 const points = computed(() => summaryData.value?.totals?.points ?? 0)
 const recent = computed(() =>
   (assignData.value?.assignments ?? []).filter(a => a.status === 'lista').slice(0, 5)
@@ -147,5 +158,24 @@ const recent = computed(() =>
 
 .bp-badge.is-locked .bp-badge-label {
   color: #A9BACF;
+}
+
+.bp-badge-unlock {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #EEF3FB;
+  color: #6F86A8;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.bp-badge-unlock.is-open {
+  background: #FFF6E0;
+  color: #A36F00;
 }
 </style>

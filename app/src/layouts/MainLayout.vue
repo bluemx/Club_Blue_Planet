@@ -73,6 +73,9 @@ import {
   notifications, startNotifications, stopNotifications, onNotification, kindOf,
 } from '@/lib/notifications'
 import { celebrate, celebrations } from '@/lib/celebrate'
+import { apiFetch } from '@/lib/auth'
+import { currentUser } from '@/lib/session'
+import { PIECES, avatarUri } from '@/lib/avatar'
 
 const route = useRoute()
 const router = useRouter()
@@ -110,6 +113,41 @@ function celebrateForKid (n) {
   })
 }
 
+/*
+ * A badge that opens an avatar piece gets its own moment: the kid's face,
+ * already wearing it. Remembered per kid on this device. The first run takes
+ * whatever is already open as history, so nobody gets five celebrations the
+ * day this ships.
+ */
+async function announceUnlocks () {
+  const me = currentUser.value
+  if (!me || me.role !== 'kid') return
+  const data = await apiFetch('/api/badges').catch(() => null)
+  if (!data) return
+
+  const earned = new Map(data.badges.filter(b => b.earned).map(b => [b.id, b]))
+  const open = PIECES.filter(p => p.unlock && earned.has(p.unlock))
+  const key = `bp-unlocks-seen:${me.id}`
+
+  let seen = null
+  try { seen = JSON.parse(localStorage.getItem(key) ?? 'null') } catch { /* fresh */ }
+  const remember = (ids) => { try { localStorage.setItem(key, JSON.stringify(ids)) } catch { /* private mode */ } }
+
+  if (!Array.isArray(seen)) return remember(open.map(p => p.id))
+
+  for (const p of open.filter(p => !seen.includes(p.id))) {
+    seen.push(p.id)
+    celebrate({
+      image: avatarUri({ ...(JSON.parse(me.avatar || 'null') ?? {}), [p.key]: p.value }, me.id),
+      color: 'amber',
+      title: `¡Desbloqueaste: ${p.title}!`,
+      // No pronoun: "póntelo" is wrong for la corona, "póntela" for el sombrero.
+      detail: `Por ganar la insignia «${earned.get(p.unlock).label}». Ya está disponible en «Diseña tu avatar».`,
+    })
+  }
+  remember(seen)
+}
+
 // Every signed-in screen lives under this layout, so this is the one place the
 // polling starts — and stops on sign-out, when the router leaves for /login.
 onMounted(() => {
@@ -117,6 +155,7 @@ onMounted(() => {
   // next time the kid opens it — once per device.
   startNotifications().then(() => {
     if (!isKid.value) return
+    announceUnlocks()
     notifications.value
       .filter(n => n.kind === 'premio' && !n.readAt && !wasCelebrated(n.id) &&
         Date.now() - n.createdAt < CELEBRATE_WINDOW_MS)
@@ -128,6 +167,8 @@ onMounted(() => {
     // For a kid, getting the reward is the payoff of the whole app: it takes
     // the stage instead of a toast.
     if (n.kind === 'premio' && isKid.value) return celebrateForKid(n)
+    // An approval can complete a badge, and a badge can open a piece.
+    if (n.kind === 'aprobada' && isKid.value) announceUnlocks()
 
     const k = kindOf(n)
     $q.notify({

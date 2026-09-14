@@ -25,8 +25,9 @@
               <div class="bp-gift-lid"><span class="bp-gift-bow" /></div>
             </div>
           </div>
-          <div class="bp-cele-prize bp-row-badge" :class="current.color">
-            <q-icon :name="current.icon" />
+          <div class="bp-cele-prize bp-row-badge" :class="[current.color, { 'bp-cele-prize--pic': current.image }]">
+            <img v-if="current.image" :src="current.image" alt="" draggable="false" />
+            <q-icon v-else :name="current.icon" />
           </div>
           <div ref="burst" class="bp-cele-burst" />
         </div>
@@ -311,6 +312,20 @@ onBeforeUnmount(() => {
   animation:
     bp-prize-up .8s cubic-bezier(.34, 1.56, .64, 1) 1s forwards,
     bp-prize-float 3.2s ease-in-out 1.8s infinite;
+}
+
+/* A face, not a glyph: round, and the picture fills it. */
+.bp-cele .bp-cele-prize--pic {
+  width: 132px;
+  height: 132px;
+  margin: -66px 0 0 -66px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.bp-cele-prize--pic img {
+  width: 100%;
+  height: 100%;
 }
 
 .bp-cele-burst {
