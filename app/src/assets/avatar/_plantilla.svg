@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <!--
+    Plantilla para piezas de avatar. Dibuja tu pieza en una capa encima de
+    estas guías y exporta SOLO tu pieza (borra el grupo "guias") como SVG de
+    400×400. Ver README.md en esta carpeta.
+  -->
+  <g id="guias" font-family="sans-serif" font-size="13" font-weight="700">
+    <rect width="400" height="400" fill="#F2D3B1"/>
+    <rect y="0" width="400" height="100" fill="#34C77B" opacity=".25"/>
+    <text x="12" y="22" fill="#12814F">Zona libre: sombreros, peinados, moños</text>
+    <rect y="100" width="400" height="36" fill="#FFC531" opacity=".35"/>
+    <text x="12" y="123" fill="#8A5A00">Cejas: se pueden tapar un poco</text>
+    <rect y="136" width="400" height="92" fill="#E8438E" opacity=".18"/>
+    <text x="12" y="186" fill="#A2195A">Ojos: no tapar (salvo lentes)</text>
+    <rect y="242" width="400" height="84" fill="#1467E4" opacity=".15"/>
+    <text x="12" y="290" fill="#0F4FB8">Boca: no tapar</text>
+    <circle cx="200" cy="200" r="198" fill="none" stroke="#1467E4" stroke-width="3" stroke-dasharray="12 8"/>
+    <text x="118" y="392" fill="#0F4FB8">Todo lo de fuera del círculo se recorta</text>
+  </g>
+</svg>

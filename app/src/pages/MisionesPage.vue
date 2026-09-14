@@ -63,6 +63,7 @@
           v-for="a in shown"
           :key="a.id"
           :ref="(el) => setRow(a.id, el)"
+          :by="{ id: a.childId, avatar: a.childAvatar }"
           :title="a.title"
           :subtitle="`${a.childName} · ${STATE[a.status].label}`"
           :icon="a.icon"

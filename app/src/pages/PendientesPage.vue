@@ -18,6 +18,7 @@
         <MissionRow
           v-for="p in proposalList"
           :key="p.id"
+          :by="{ id: p.proposedBy, avatar: p.childAvatar }"
           :title="p.title"
           :subtitle="`${p.childName} · dificultad ${p.difficulty || 'fácil'}`"
           :icon="p.icon"
@@ -65,6 +66,7 @@
         <MissionRow
           v-for="r in pendingRedemptions"
           :key="r.id"
+          :by="{ id: r.childId, avatar: r.childAvatar }"
           :title="r.title"
           :subtitle="`${r.childName} lo pidió`"
           :icon="r.icon"

@@ -1218,3 +1218,57 @@ a.bp-submit {
   .bp-fly-leave-active,
   .bp-fly-enter-active { transition: none; }
 }
+
+// ===================================================================
+// Kid avatars
+// ===================================================================
+.bp-kid-avatar {
+  display: block;
+  flex: none;
+  border-radius: 50%;
+  background: #EAF3FF;
+  box-shadow: 0 0 0 2px #fff, 0 3px 8px -2px rgba(11, 43, 107, .25);
+}
+
+.bp-row-avatar { flex: none; }
+
+// The badge hosts a small face on its corner: whose mission / reward it is.
+.bp-row-badge { position: relative; }
+
+.bp-row-by {
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+}
+
+// The kid's own card, linking into the editor
+.bp-me {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform .15s;
+}
+
+.bp-me:active { transform: scale(.99); }
+
+.bp-me-text {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.bp-me-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: $dark;
+}
+
+.bp-me-cta {
+  margin-top: 2px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: $primary;
+}

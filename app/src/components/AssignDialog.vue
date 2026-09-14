@@ -20,7 +20,7 @@
           :class="{ 'is-on': picked.includes(child.id) }"
           @click="toggle(child.id)"
         >
-          <span class="bp-row-badge blue"><q-icon name="face" /></span>
+          <KidAvatar :avatar="child.avatar" :seed="child.id" :size="44" />
           <span class="col text-left">
             <span class="bp-row-title">{{ child.name }}</span>
             <span class="bp-row-subtitle">{{ child.points }} puntos</span>
@@ -55,6 +55,7 @@
 </template>
 
 <script setup>
+import KidAvatar from '@/components/KidAvatar.vue'
 import { ref, computed } from 'vue'
 import { assignMission } from '@/lib/api'
 

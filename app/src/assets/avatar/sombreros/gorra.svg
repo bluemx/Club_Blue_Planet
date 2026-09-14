@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+  <!-- Club blue cap -->
+  <!-- Scaled 1.25× about the visor so it sits on the head, not on the edge. -->
+  <g stroke="#1A1A1A" stroke-width="6.4" stroke-linejoin="round" stroke-linecap="round"
+     transform="translate(200 94) scale(1.25) translate(-200 -96)">
+    <path d="M78 98 C78 24 136 -6 200 -6 C264 -6 322 24 322 98 Z" fill="#1467E4"/>
+    <path d="M200 -6 L200 98" fill="none" stroke="#0F4FB8" stroke-width="6"/>
+    <path d="M128 24 C150 10 172 6 190 6" fill="none" stroke="#5CA3FF" stroke-width="10"/>
+    <path d="M86 96 Q200 76 314 96 Q200 136 86 96 Z" fill="#0F4FB8"/>
+    <path d="M200 38 L208 54 L226 56 L213 68 L216 86 L200 77 L184 86 L187 68 L174 56 L192 54 Z" fill="#FFC531" stroke-width="5"/>
+  </g>
+</svg>

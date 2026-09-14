@@ -33,6 +33,10 @@ export const legal = {
         h: '7. Contacto',
         p: '¿Dudas sobre estos términos? Escríbenos a hola@clubblueplanet.com.',
       },
+      {
+        h: '8. Créditos',
+        p: 'Las caras de los avatares usan el diseño «Adventurer Neutral» de Lisa Wischofsky, bajo licencia CC BY 4.0 (creativecommons.org/licenses/by/4.0), generado con DiceBear.',
+      },
     ],
   },
 

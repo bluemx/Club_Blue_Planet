@@ -16,7 +16,7 @@
           :disabled="!canAfford(child)"
           @click="picked = child.id"
         >
-          <q-avatar size="34px" color="primary" text-color="white" icon="face" />
+          <KidAvatar :avatar="child.avatar" :seed="child.id" :size="38" />
           <span class="col text-left">
             <span class="bp-row-title">{{ child.name }}</span>
             <span class="bp-row-subtitle">
@@ -47,6 +47,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import KidAvatar from '@/components/KidAvatar.vue'
 import { redeemRewardFor } from '@/lib/api'
 
 const props = defineProps({

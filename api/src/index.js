@@ -53,8 +53,11 @@ app.get('/api/me', async (c) => {
     childrenCount = row?.n ?? 0
   }
 
+  // Not a Better Auth field, so it isn't on the session; one indexed read.
+  const avatar = (await c.env.DB.prepare('SELECT avatar FROM user WHERE id = ?').bind(id).first())?.avatar ?? null
+
   return c.json({
-    user: { id, name, email, role: role ?? 'parent', parentId, childrenCount },
+    user: { id, name, email, role: role ?? 'parent', parentId, childrenCount, avatar },
   })
 })
 

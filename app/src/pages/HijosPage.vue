@@ -52,8 +52,7 @@
           :key="child.id"
           :title="child.name"
           :subtitle="`${child.points} puntos`"
-          icon="face"
-          color="blue"
+          :kid="child"
         >
           <template #trailing>
             <q-btn

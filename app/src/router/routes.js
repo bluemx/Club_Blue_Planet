@@ -26,6 +26,7 @@ const routes = [
       { path: 'kid/nueva', component: () => import('@/pages/kid/KidNuevaPage.vue') },
       { path: 'kid/recompensas', component: () => import('@/pages/kid/KidRecompensasPage.vue') },
       { path: 'kid/perfil', component: () => import('@/pages/kid/KidInsigniasPage.vue') },
+      { path: 'kid/avatar', component: () => import('@/pages/kid/KidAvatarPage.vue') },
     ],
   },
 

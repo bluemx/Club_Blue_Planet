@@ -90,6 +90,7 @@
             v-for="r in pending"
             :key="r.id"
             :ref="(el) => setRow(r.id, el)"
+            :by="{ id: r.childId, avatar: r.childAvatar }"
             :title="r.title"
             :subtitle="`${r.childName} lo pidió · ${when(r)}`"
             :icon="r.icon"
@@ -142,6 +143,7 @@
           <MissionRow
             v-for="h in history"
             :key="h.id"
+            :by="{ id: h.childId, avatar: h.childAvatar }"
             :title="h.title"
             :subtitle="`${h.childName} · ${when(h)}`"
             :icon="h.icon"

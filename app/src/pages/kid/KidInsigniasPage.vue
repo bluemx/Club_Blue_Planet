@@ -5,6 +5,16 @@
       :subtitle="['Completa misiones, crea buenos hábitos', 'y gana insignias.']"
     />
 
+    <!-- Their own face, and the way into the editor. -->
+    <router-link to="/kid/avatar" class="bp-sheet bp-me">
+      <KidAvatar :avatar="me?.avatar" :seed="me?.id" :size="64" />
+      <span class="bp-me-text">
+        <span class="bp-me-name">¡Hola, {{ me?.name }}!</span>
+        <span class="bp-me-cta">{{ me?.avatar ? 'Cambiar mi avatar' : '¡Diseña tu avatar!' }}</span>
+      </span>
+      <q-icon name="chevron_right" size="24px" color="primary" />
+    </router-link>
+
     <div class="bp-sheet">
       <div class="bp-sheet-note justify-between">
         <span class="row items-center" style="gap: 10px">
@@ -67,6 +77,8 @@
 import { computed } from 'vue'
 import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
+import KidAvatar from '@/components/KidAvatar.vue'
+import { currentUser as me } from '@/lib/session'
 import { apiFetch } from '@/lib/auth'
 import { assignments, summary, useResource } from '@/lib/api'
 

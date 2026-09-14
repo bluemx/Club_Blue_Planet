@@ -137,7 +137,7 @@ api.post('/missions', async (c) => {
 /** Parent sees the whole family's; a kid sees only their own. */
 api.get('/assignments', async (c) => {
   const sql = `
-    SELECT a.*, m.title, m.subtitle, m.icon, m.color, u.name AS childName,
+    SELECT a.*, m.title, m.subtitle, m.icon, m.color, u.name AS childName, u.avatar AS childAvatar,
            (a.evidenceKey IS NOT NULL) AS hasPhoto
     FROM assignment a
     JOIN mission m ON m.id = a.missionId
@@ -332,9 +332,10 @@ api.get('/summary', async (c) => {
   const familyId = c.get('familyId')
   const isKid = c.get('isKid')
 
+  // The session user doesn't carry the avatar column, so both branches read the table.
   const children = isKid
-    ? [{ id: c.get('user').id, name: c.get('user').name }]
-    : (await c.env.DB.prepare('SELECT id, name FROM user WHERE familyId = ? AND role = ? ORDER BY createdAt')
+    ? [await c.env.DB.prepare('SELECT id, name, avatar FROM user WHERE id = ?').bind(c.get('user').id).first()]
+    : (await c.env.DB.prepare('SELECT id, name, avatar FROM user WHERE familyId = ? AND role = ? ORDER BY createdAt')
         .bind(familyId, 'kid').all()).results ?? []
 
   const withPoints = await Promise.all(
@@ -443,7 +444,7 @@ api.get('/redemptions', async (c) => {
   const [page, totals] = await c.env.DB.batch([
     c.env.DB
       .prepare(`
-        SELECT r.*, w.title, w.icon, w.color, u.name AS childName
+        SELECT r.*, w.title, w.icon, w.color, u.name AS childName, u.avatar AS childAvatar
         FROM redemption r
         JOIN reward w ON w.id = r.rewardId
         JOIN user u ON u.id = r.childId
@@ -860,7 +861,7 @@ api.post('/proposals', async (c) => {
 /** Pending proposals — adults review them, kids watch their own. */
 api.get('/proposals', async (c) => {
   const sql = `
-    SELECT m.*, u.name AS childName
+    SELECT m.*, u.name AS childName, u.avatar AS childAvatar
     FROM mission m LEFT JOIN user u ON u.id = m.proposedBy
     WHERE m.familyId = ? AND m.status = 'propuesta'
       ${c.get('isKid') ? 'AND m.proposedBy = ?' : ''}
@@ -1024,4 +1025,46 @@ api.post('/notifications/read', async (c) => {
   ])
 
   return c.json({ ok: true })
+})
+
+// ------------------------------------------------------------------ avatar
+
+// Face parts (skin, eyes, eyebrows, mouth, glasses) plus the app's own layer
+// categories — folder names under app/src/assets/avatar — so a designer adding
+// a category needs no API change. Checked by shape only: values are rendered
+// on the device into an SVG shown through <img>, which runs no script, so a bad
+// value can at worst draw a wrong piece on that kid's own face.
+const AVATAR_KEY = /^[a-z][a-zA-Z]{1,19}$/
+const AVATAR_VALUE = /^[a-z0-9-]{1,24}$/i
+const AVATAR_MAX_KEYS = 16
+
+/** A kid saves the avatar they designed. Only for themselves. */
+api.post('/avatar', async (c) => {
+  if (!c.get('isKid')) return c.json({ error: 'El avatar lo diseña cada niño desde su cuenta.' }, 403)
+
+  const body = await c.req.json().catch(() => ({}))
+  const given = body.avatar
+  if (!given || typeof given !== 'object' || Array.isArray(given)) {
+    return c.json({ error: 'Avatar inválido.' }, 400)
+  }
+
+  const entries = Object.entries(given)
+  if (entries.length > AVATAR_MAX_KEYS) return c.json({ error: 'Avatar inválido.' }, 400)
+
+  const avatar = {}
+  for (const [key, value] of entries) {
+    if (!AVATAR_KEY.test(key)) return c.json({ error: 'Avatar inválido.' }, 400)
+    if (value == null) continue
+    if (typeof value !== 'string' || !AVATAR_VALUE.test(value)) {
+      return c.json({ error: 'Avatar inválido.' }, 400)
+    }
+    avatar[key] = value
+  }
+
+  await c.env.DB
+    .prepare('UPDATE user SET avatar = ? WHERE id = ?')
+    .bind(JSON.stringify(avatar), c.get('user').id)
+    .run()
+
+  return c.json({ avatar })
 })

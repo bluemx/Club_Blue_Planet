@@ -1,7 +1,13 @@
 <template>
   <div class="bp-row" :class="{ 'bp-row--tappable': tappable }">
-    <div class="bp-row-badge" :class="color">
+    <!-- kid: the row is about this child, so their face is the badge.
+         by: the row is a mission/reward, and this is whose it is. -->
+    <div v-if="kid" class="bp-row-avatar">
+      <KidAvatar :avatar="kid.avatar" :seed="kid.id" :size="44" />
+    </div>
+    <div v-else class="bp-row-badge" :class="color">
       <q-icon :name="icon" />
+      <KidAvatar v-if="by" :avatar="by.avatar" :seed="by.id" :size="22" class="bp-row-by" />
     </div>
     <div class="col">
       <div class="bp-row-title">{{ title }}</div>
@@ -19,6 +25,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import KidAvatar from '@/components/KidAvatar.vue'
 
 const props = defineProps({
   title: { type: String, required: true },
@@ -29,6 +36,9 @@ const props = defineProps({
   // '+50' for earning, plain '350' for a cost
   sign: { type: Boolean, default: true },
   tappable: { type: Boolean, default: false },
+  // { id, avatar } of a child — see the template
+  kid: { type: Object, default: null },
+  by: { type: Object, default: null },
 })
 
 const signed = computed(() => (props.sign ? `+${props.points}` : props.points))

@@ -26,7 +26,10 @@
 
         <div v-for="child in children" :key="child.id" class="q-mb-md">
           <div class="row items-center justify-between q-mb-xs">
-            <span class="bp-row-title">{{ child.name }}</span>
+            <span class="row items-center no-wrap" style="gap: 8px">
+              <KidAvatar :avatar="child.avatar" :seed="child.id" :size="32" />
+              <span class="bp-row-title">{{ child.name }}</span>
+            </span>
             <span class="bp-points-pill">
               <q-icon name="star" size="14px" />
               {{ child.points }}
@@ -49,6 +52,7 @@
 </template>
 
 <script setup>
+import KidAvatar from '@/components/KidAvatar.vue'
 import { computed } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { summary, useResource } from '@/lib/api'
