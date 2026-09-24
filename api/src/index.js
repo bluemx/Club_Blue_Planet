@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { createAuth, originList } from './auth.js'
 import { api, familyFor } from './routes.js'
+import { materializeRoutines, sendWeeklyReports } from './habits.js'
 
 const app = new Hono()
 
@@ -54,13 +55,25 @@ app.get('/api/me', async (c) => {
   }
 
   // Not a Better Auth field, so it isn't on the session; one indexed read.
-  const avatar = (await c.env.DB.prepare('SELECT avatar FROM user WHERE id = ?').bind(id).first())?.avatar ?? null
+  const extra = await c.env.DB.prepare('SELECT avatar, parentConsentAt, weeklyReport FROM user WHERE id = ?').bind(id).first()
 
   return c.json({
-    user: { id, name, email, role: role ?? 'parent', parentId, childrenCount, avatar },
+    user: {
+      id, name, email, role: role ?? 'parent', parentId, childrenCount,
+      avatar: extra?.avatar ?? null,
+      parentConsentAt: extra?.parentConsentAt ?? null,
+      weeklyReport: !!extra?.weeklyReport,
+    },
   })
 })
 
 app.route('/api', api)
 
-export default app
+export default {
+  fetch: app.fetch,
+  // Crons (wrangler.jsonc): daily, today's recurring missions; Monday, the report.
+  async scheduled (event, env, ctx) {
+    if (event.cron === '0 15 * * 1') ctx.waitUntil(sendWeeklyReports(env))
+    else ctx.waitUntil(materializeRoutines(env.DB))
+  },
+}

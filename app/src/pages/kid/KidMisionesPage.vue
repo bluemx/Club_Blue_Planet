@@ -40,7 +40,7 @@
           :key="a.id"
           :ref="(el) => setRow(a.id, el)"
           :title="a.title"
-          :subtitle="a.subtitle"
+          :subtitle="a.routineId ? `🔁 Se repite${a.subtitle ? ` · ${a.subtitle}` : ''}` : a.subtitle"
           :icon="a.icon"
           :color="a.color"
           :points="a.points"

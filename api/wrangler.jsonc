@@ -23,6 +23,9 @@
   // the sending domain to be onboarded in the dashboard first.
   // Workers AI: mission ideas for a child's age and a parent's topic.
   "ai": { "binding": "AI" },
+  // 11:00 UTC = 05:00 in Mexico: today's recurring missions.
+  // Monday 15:00 UTC = 09:00: the weekly report email.
+  "triggers": { "crons": ["0 11 * * *", "0 15 * * 1"] },
   "send_email": [
     { "name": "EMAIL" }
   ],
@@ -31,6 +34,33 @@
     "APP_ORIGINS": "https://clubblueplanet-app.ealbinu.workers.dev",
     "MAIL_FROM": "no-reply@unmensaje.com",
     "BETTER_AUTH_URL": "https://clubblueplanet.ealbinu.workers.dev"
-  }
+  },
   // Secrets (set with `wrangler secret put`): BETTER_AUTH_SECRET
+
+  // Test environment: its own worker, database and photo bucket, never the
+  // real families. Deploy with `npm run deploy:staging`.
+  "env": {
+    "staging": {
+      "name": "clubblueplanet-staging",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "club-blue-planet-staging",
+          "database_id": "3ff2f9f1-df11-4a78-a485-f2b71094b96c",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "r2_buckets": [
+        { "binding": "EVIDENCE", "bucket_name": "club-blue-planet-evidencias-staging" }
+      ],
+      "ai": { "binding": "AI" },
+      "send_email": [{ "name": "EMAIL" }],
+      "triggers": { "crons": ["0 11 * * *", "0 15 * * 1"] },
+      "vars": {
+        "APP_ORIGINS": "https://clubblueplanet-app-staging.ealbinu.workers.dev,http://localhost:9200",
+        "MAIL_FROM": "no-reply@unmensaje.com",
+        "BETTER_AUTH_URL": "https://clubblueplanet-staging.ealbinu.workers.dev"
+      }
+    }
+  }
 }

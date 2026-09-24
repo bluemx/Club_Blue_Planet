@@ -91,9 +91,19 @@
             maxlength="60"
           />
 
+          <!-- Asked once per adult, before the family holds any child's data. -->
+          <label v-if="needsConsent" class="bp-consent">
+            <q-checkbox v-model="consent" dense color="primary" />
+            <span>
+              Soy su madre, padre o tutor y doy mi consentimiento para que Club Blue Planet
+              guarde su nombre, avatar, misiones y fotos, como explica el
+              <a href="#" @click.prevent="privacyOpen = true">aviso de privacidad</a>.
+            </span>
+          </label>
+
           <p v-if="addError" class="bp-auth-error q-mb-sm">{{ addError }}</p>
 
-          <button type="submit" class="bp-submit" :disabled="!name.trim() || saving">
+          <button type="submit" class="bp-submit" :disabled="!name.trim() || saving || (needsConsent && !consent)">
             <OrnIcon /> {{ saving ? 'Guardando…' : 'Agregar hijo' }} <OrnIcon />
           </button>
         </q-form>
@@ -134,6 +144,8 @@
       </div>
     </q-dialog>
 
+    <LegalDialog v-model="privacyOpen" kind="privacy" @accept="consent = true" />
+
     <q-dialog v-model="removeOpen">
       <div class="bp-confirm">
         <h2 class="bp-confirm-title">¿Eliminar a {{ removing?.name }}?</h2>
@@ -164,7 +176,8 @@ import CodeInput from '@/components/CodeInput.vue'
 import JoinFamilyDialog from '@/components/JoinFamilyDialog.vue'
 import { OrnIcon } from '@/components/authIcons'
 import { apiFetch } from '@/lib/auth'
-import { invalidateSession } from '@/lib/session'
+import { invalidateSession, currentUser } from '@/lib/session'
+import LegalDialog from '@/components/LegalDialog.vue'
 import { summary, useResource, setChildBirthYear } from '@/lib/api'
 import { useJoinFamily } from '@/lib/joinFamily'
 
@@ -177,6 +190,9 @@ const children = computed(() => data.value?.children ?? [])
 const onboarding = computed(() => !loading.value && !children.value.length)
 
 const name = ref('')
+const consent = ref(false)
+const privacyOpen = ref(false)
+const needsConsent = computed(() => !currentUser.value?.parentConsentAt)
 const saving = ref(false)
 const addError = ref('')
 
@@ -250,7 +266,7 @@ async function add () {
   try {
     await apiFetch('/api/auth/kid-code/children', {
       method: 'POST',
-      body: JSON.stringify({ name: value }),
+      body: JSON.stringify({ name: value, ...(needsConsent.value && { consent: true }) }),
     })
     name.value = ''
     invalidateSession()
@@ -264,6 +280,20 @@ async function add () {
 </script>
 
 <style scoped>
+.bp-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 4px 0 10px;
+  color: #55708F;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.bp-consent a { color: #1467E4; font-weight: 800; }
+
 .bp-ages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .bp-age { padding: 12px 0; border: 1.5px solid #E1ECFA; border-radius: 14px; background: linear-gradient(180deg, #fff, #F2F7FF); color: #0B2A5B; font: inherit; font-size: 17px; font-weight: 800; cursor: pointer; }
 .bp-age.is-on { border-color: #1467E4; background: #EAF2FF; color: #1467E4; }

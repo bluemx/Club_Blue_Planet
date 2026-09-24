@@ -17,10 +17,11 @@ export const createMission = (mission) =>
   apiFetch('/api/missions', { method: 'POST', body: JSON.stringify(mission) })
 
 /** childIds may be one id or an array — the API accepts both. */
-export const assignMission = (missionId, childIds) =>
+/** repeatDays: weekdays (0 = Sunday) to repeat on; null/omitted = once. */
+export const assignMission = (missionId, childIds, repeatDays = null) =>
   apiFetch('/api/assignments', {
     method: 'POST',
-    body: JSON.stringify({ missionId, childIds: [].concat(childIds) }),
+    body: JSON.stringify({ missionId, childIds: [].concat(childIds), ...(repeatDays && { repeatDays }) }),
   })
 
 export const setAssignmentStatus = (id, status, note) =>
@@ -108,3 +109,21 @@ export const setChildBirthYear = (childId, birthYear) =>
 /** Five AI mission ideas for a child's age and a topic; nothing is saved. */
 export const aiIdeas = (childId, topic) =>
   apiFetch('/api/suggestions/ai', { method: 'POST', body: JSON.stringify({ childId, topic }) })
+
+// Routines (recurring missions)
+export const routines = () => apiFetch('/api/routines')
+export const updateRoutine = (id, days) =>
+  apiFetch(`/api/routines/${id}`, { method: 'PATCH', body: JSON.stringify({ days }) })
+export const stopRoutine = (id) => apiFetch(`/api/routines/${id}`, { method: 'DELETE' })
+
+export const weekReport = (weeksAgo = 0) => apiFetch(`/api/report?weeksAgo=${weeksAgo}`)
+export const onboarding = () => apiFetch('/api/onboarding')
+export const setPrefs = (prefs) => apiFetch('/api/me/prefs', { method: 'PATCH', body: JSON.stringify(prefs) })
+
+// Edit & archive
+export const updateMission = (id, mission) =>
+  apiFetch(`/api/missions/${id}`, { method: 'PATCH', body: JSON.stringify(mission) })
+export const archiveMission = (id) => apiFetch(`/api/missions/${id}`, { method: 'DELETE' })
+export const updateReward = (id, reward) =>
+  apiFetch(`/api/rewards/${id}`, { method: 'PATCH', body: JSON.stringify(reward) })
+export const archiveReward = (id) => apiFetch(`/api/rewards/${id}`, { method: 'DELETE' })

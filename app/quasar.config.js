@@ -51,7 +51,8 @@ export default defineConfig((/* ctx */) => {
       // defineEnv: {}
       // ignorePublicFolder: true,
       // minify: false,
-      // distDir
+      // Staging builds point at the staging API and land in their own folder.
+      distDir: process.env.DIST_DIR || undefined,
 
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},

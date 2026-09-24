@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { createAuth } from './auth.js'
 import { rateLimit } from './rate-limit.js'
+import { materializeRoutines, streakFor, weekReport, daysToMask, maskToDays } from './habits.js'
 
 export const api = new Hono()
 
@@ -136,6 +137,8 @@ api.post('/missions', async (c) => {
 
 /** Parent sees the whole family's; a kid sees only their own. */
 api.get('/assignments', async (c) => {
+  // Today's copies of recurring missions exist before anyone looks.
+  await materializeRoutines(c.env.DB, c.get('familyId'))
   const sql = `
     SELECT a.*, m.title, m.subtitle, m.icon, m.color, u.name AS childName, u.avatar AS childAvatar,
            (a.evidenceKey IS NOT NULL) AS hasPhoto
@@ -189,6 +192,27 @@ api.post('/assignments', async (c) => {
 
   if ((owned?.length ?? 0) !== childIds.length) {
     return c.json({ error: 'Algún hijo no es de tu familia.' }, 404)
+  }
+
+  // Repeat on weekdays (0 = Sunday): a routine per child; today's copy, if
+  // today is one of the days, is made right away by materializeRoutines.
+  if (Array.isArray(body.repeatDays)) {
+    const mask = daysToMask(body.repeatDays)
+    if (!mask) return c.json({ error: 'Elige al menos un día.' }, 400)
+    const ts = now()
+    await c.env.DB.batch([
+      ...childIds.map((childId) => c.env.DB
+        .prepare('INSERT INTO routine (id,familyId,missionId,childId,days,createdAt) VALUES (?,?,?,?,?,?)')
+        .bind(crypto.randomUUID(), familyId, missionId, childId, mask, ts)),
+      ...childIds.map((childId) => notifyUser(c.env.DB, childId, {
+        kind: 'asignada',
+        title: `Nueva misión que se repite: ${mission.title}`,
+        body: `Cada ${daysLabel(mask)}. Gana ${mission.points} puntos cada vez.`,
+        link: '/kid/misiones',
+      })),
+    ])
+    await materializeRoutines(c.env.DB, familyId)
+    return c.json({ ok: true, repeat: maskToDays(mask) }, 201)
   }
 
   const createdAt = now()
@@ -282,8 +306,9 @@ api.get('/rewards', async (c) => {
   const familyId = c.get('familyId')
   const [{ results }, { results: uses }] = await c.env.DB.batch([
     c.env.DB
-      .prepare('SELECT * FROM reward WHERE familyId IS NULL OR familyId = ? ORDER BY points')
-      .bind(familyId),
+      .prepare(`SELECT * FROM reward WHERE (familyId IS NULL OR familyId = ?) AND archivedAt IS NULL
+                ${c.get('isKid') ? 'AND (expiresAt IS NULL OR expiresAt > ?)' : ''} ORDER BY points`)
+      .bind(familyId, ...(c.get('isKid') ? [now()] : [])),
     // What counts against a limit: asked for or handed over, not rejected.
     c.env.DB
       .prepare(`SELECT rewardId, childId, COUNT(*) AS n FROM redemption
@@ -316,6 +341,9 @@ api.post('/rewards', async (c) => {
     return c.json({ error: 'El límite debe ser entre 1 y 99, o sin límite.' }, 400)
   }
 
+  const extra = rewardExtras(body)
+  if (extra.error) return c.json({ error: extra.error }, 400)
+
   const reward = {
     id: crypto.randomUUID(),
     familyId: c.get('familyId'),
@@ -325,12 +353,14 @@ api.post('/rewards', async (c) => {
     color: body.color || 'blue',
     points: Number.isFinite(body.points) ? body.points : 100,
     maxPerChild,
+    expiresAt: extra.expiresAt ?? null,
+    requiredStreak: extra.requiredStreak ?? null,
     createdAt: now(),
   }
 
   await c.env.DB
-    .prepare('INSERT INTO reward (id,familyId,title,subtitle,icon,color,points,maxPerChild,createdAt) VALUES (?,?,?,?,?,?,?,?,?)')
-    .bind(reward.id, reward.familyId, reward.title, reward.subtitle, reward.icon, reward.color, reward.points, reward.maxPerChild, reward.createdAt)
+    .prepare('INSERT INTO reward (id,familyId,title,subtitle,icon,color,points,maxPerChild,expiresAt,requiredStreak,createdAt) VALUES (?,?,?,?,?,?,?,?,?,?,?)')
+    .bind(reward.id, reward.familyId, reward.title, reward.subtitle, reward.icon, reward.color, reward.points, reward.maxPerChild, reward.expiresAt, reward.requiredStreak, reward.createdAt)
     .run()
 
   return c.json(reward, 201)
@@ -366,7 +396,11 @@ api.get('/summary', async (c) => {
         .bind(familyId, 'kid').all()).results ?? []
 
   const withPoints = await Promise.all(
-    children.map(async (child) => ({ ...child, points: await balanceFor(c.env.DB, child.id) }))
+    children.map(async (child) => ({
+      ...child,
+      points: await balanceFor(c.env.DB, child.id),
+      streak: await streakFor(c.env.DB, child.id),
+    }))
   )
 
   const counts = await c.env.DB
@@ -400,11 +434,20 @@ api.post('/redemptions', async (c) => {
   if (!childId || !body.rewardId) return c.json({ error: 'Falta el premio o el hijo.' }, 400)
 
   const reward = await c.env.DB
-    .prepare('SELECT id, title, points, icon, color, maxPerChild FROM reward WHERE id = ? AND (familyId IS NULL OR familyId = ?)')
+    .prepare('SELECT id, title, points, icon, color, maxPerChild, expiresAt, requiredStreak FROM reward WHERE id = ? AND (familyId IS NULL OR familyId = ?) AND archivedAt IS NULL')
     .bind(body.rewardId, familyId)
     .first()
 
   if (!reward) return c.json({ error: 'Ese premio no existe.' }, 404)
+  if (reward.expiresAt && reward.expiresAt <= now()) {
+    return c.json({ error: 'Ese premio ya venció.' }, 409)
+  }
+  if (reward.requiredStreak) {
+    const streak = await streakFor(c.env.DB, childId)
+    if (streak < reward.requiredStreak) {
+      return c.json({ error: `Necesita una racha de ${reward.requiredStreak} días (lleva ${streak}).`, streak }, 409)
+    }
+  }
 
   // ponytail: checked, then inserted — two requests for the same child in the
   // same instant could both pass (the balance check has the same window). A
@@ -557,6 +600,182 @@ api.get('/badges', async (c) => {
   })
 
   return c.json({ badges })
+})
+
+// ------------------------------------------------------------- routines
+
+const DAY_NAMES = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
+function daysLabel (mask) {
+  const d = maskToDays(mask)
+  if (d.length === 7) return 'día'
+  if (d.join() === '1,2,3,4,5') return 'día entre semana'
+  if (d.join() === '0,6') return 'fin de semana'
+  return d.map(i => DAY_NAMES[i]).join(', ')
+}
+
+/** A reward's deadline (days from now) and streak goal, validated. */
+function rewardExtras (body) {
+  const out = {}
+  if (body.expiresInDays != null) {
+    const n = Number(body.expiresInDays)
+    if (!(Number.isInteger(n) && n >= 1 && n <= 365)) return { error: 'La fecha límite debe ser de 1 a 365 días.' }
+    out.expiresAt = now() + n * 24 * 3600e3
+  } else if (body.expiresAt === null) out.expiresAt = null
+  if (body.requiredStreak !== undefined) {
+    const n = body.requiredStreak === null ? null : Number(body.requiredStreak)
+    if (n !== null && !(Number.isInteger(n) && n >= 1 && n <= 60)) return { error: 'La racha debe ser de 1 a 60 días.' }
+    out.requiredStreak = n
+  }
+  return out
+}
+
+api.get('/routines', async (c) => {
+  const { results } = await c.env.DB
+    .prepare(`SELECT r.id, r.days, r.childId, r.missionId, m.title, m.icon, m.color, m.points, u.name AS childName, u.avatar AS childAvatar
+              FROM routine r JOIN mission m ON m.id = r.missionId JOIN user u ON u.id = r.childId
+              WHERE r.familyId = ? AND r.stoppedAt IS NULL ${c.get('isKid') ? 'AND r.childId = ?' : ''}
+              ORDER BY r.createdAt DESC`)
+    .bind(c.get('familyId'), ...(c.get('isKid') ? [c.get('user').id] : []))
+    .all()
+  return c.json({ routines: (results ?? []).map(r => ({ ...r, days: maskToDays(r.days), label: daysLabel(r.days) })) })
+})
+
+/** Change the days, or stop it. Copies already made stay. */
+api.patch('/routines/:id', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const body = await c.req.json().catch(() => ({}))
+  const mask = daysToMask(Array.isArray(body.days) ? body.days : [])
+  if (!mask) return c.json({ error: 'Elige al menos un día.' }, 400)
+  const res = await c.env.DB.prepare('UPDATE routine SET days = ? WHERE id = ? AND familyId = ? AND stoppedAt IS NULL')
+    .bind(mask, c.req.param('id'), c.get('familyId')).run()
+  if (!res.meta?.changes) return c.json({ error: 'No encontrada.' }, 404)
+  return c.json({ ok: true, days: maskToDays(mask), label: daysLabel(mask) })
+})
+
+api.delete('/routines/:id', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const id = c.req.param('id')
+  const familyId = c.get('familyId')
+  const res = await c.env.DB.prepare('UPDATE routine SET stoppedAt = ? WHERE id = ? AND familyId = ? AND stoppedAt IS NULL')
+    .bind(now(), id, familyId).run()
+  if (!res.meta?.changes) return c.json({ error: 'No encontrada.' }, 404)
+  // Today's copy nobody started goes with it.
+  await c.env.DB.prepare("DELETE FROM assignment WHERE routineId = ? AND status = 'pendiente'").bind(id).run()
+  return c.json({ ok: true })
+})
+
+// --------------------------------------------------------------- report
+
+api.get('/report', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const weeksAgo = Math.min(12, Math.max(0, Number(c.req.query('weeksAgo')) || 0))
+  return c.json(await weekReport(c.env.DB, c.get('familyId'), weeksAgo))
+})
+
+// ------------------------------------------------------------ onboarding
+
+/** The parent's first steps, so the home can walk them through. */
+api.get('/onboarding', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const f = c.get('familyId')
+  const row = await c.env.DB.prepare(`SELECT
+      (SELECT COUNT(*) FROM user WHERE familyId = ?1 AND role = 'kid') AS kids,
+      (SELECT COUNT(*) FROM user WHERE familyId = ?1 AND role = 'kid' AND birthYear IS NOT NULL) AS aged,
+      (SELECT COUNT(*) FROM session s JOIN user u ON u.id = s.userId WHERE u.familyId = ?1 AND u.role = 'kid') AS kidSessions,
+      (SELECT COUNT(*) FROM assignment WHERE familyId = ?1) AS assignments,
+      (SELECT COUNT(*) FROM reward WHERE familyId = ?1) AS rewards`).bind(f).first()
+  return c.json({
+    steps: {
+      child: row.kids > 0,
+      age: row.kids > 0 && row.aged === row.kids,
+      kidIn: row.kidSessions > 0,
+      mission: row.assignments > 0,
+      reward: row.rewards > 0,
+    },
+  })
+})
+
+// ---------------------------------------------------------------- prefs
+
+api.patch('/me/prefs', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const body = await c.req.json().catch(() => ({}))
+  if (typeof body.weeklyReport !== 'boolean') return c.json({ error: 'Nada que cambiar.' }, 400)
+  await c.env.DB.prepare('UPDATE user SET weeklyReport = ? WHERE id = ?').bind(body.weeklyReport ? 1 : 0, c.get('user').id).run()
+  return c.json({ ok: true, weeklyReport: body.weeklyReport })
+})
+
+// ------------------------------------------------------- edit & archive
+
+/** A family's own mission (not the shared catalog): edit it in place. */
+api.patch('/missions/:id', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const body = await c.req.json().catch(() => ({}))
+  const title = String(body.title ?? '').trim().slice(0, 80)
+  if (!title) return c.json({ error: 'Falta el título.' }, 400)
+  const points = Number.isFinite(body.points) ? Math.max(0, Math.min(500, Math.round(body.points))) : null
+  const res = await c.env.DB
+    .prepare(`UPDATE mission SET title = ?, subtitle = ?, icon = COALESCE(?, icon), color = COALESCE(?, color),
+              points = COALESCE(?, points) WHERE id = ? AND familyId = ? AND status = 'activa'`)
+    .bind(title, String(body.subtitle ?? '').trim().slice(0, 120) || null, body.icon ?? null, body.color ?? null, points,
+      c.req.param('id'), c.get('familyId'))
+    .run()
+  if (!res.meta?.changes) return c.json({ error: 'Esa misión no se puede editar.' }, 404)
+  // Copies not done yet follow the new points; done ones keep what they paid.
+  if (points !== null) {
+    await c.env.DB.prepare("UPDATE assignment SET points = ? WHERE missionId = ? AND familyId = ? AND status = 'pendiente'")
+      .bind(points, c.req.param('id'), c.get('familyId')).run()
+  }
+  return c.json({ ok: true })
+})
+
+/** Archive: out of the lists and its routines stop; history stays. */
+api.delete('/missions/:id', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const id = c.req.param('id')
+  const familyId = c.get('familyId')
+  const res = await c.env.DB.prepare("UPDATE mission SET status = 'archivada' WHERE id = ? AND familyId = ? AND status = 'activa'")
+    .bind(id, familyId).run()
+  if (!res.meta?.changes) return c.json({ error: 'No encontrada.' }, 404)
+  await c.env.DB.batch([
+    c.env.DB.prepare('UPDATE routine SET stoppedAt = ? WHERE missionId = ? AND familyId = ? AND stoppedAt IS NULL').bind(now(), id, familyId),
+    c.env.DB.prepare("DELETE FROM assignment WHERE missionId = ? AND familyId = ? AND status = 'pendiente'").bind(id, familyId),
+  ])
+  return c.json({ ok: true })
+})
+
+api.patch('/rewards/:id', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const body = await c.req.json().catch(() => ({}))
+  const title = String(body.title ?? '').trim().slice(0, 80)
+  if (!title) return c.json({ error: 'Falta el título.' }, 400)
+  const points = Number.isFinite(body.points) ? Math.max(0, Math.min(5000, Math.round(body.points))) : null
+  const max = body.maxPerChild === undefined ? undefined : body.maxPerChild
+  if (max !== undefined && max !== null && !(Number.isInteger(max) && max >= 1 && max <= 99)) {
+    return c.json({ error: 'El límite debe ser entre 1 y 99, o sin límite.' }, 400)
+  }
+  const extra = rewardExtras(body)
+  if (extra.error) return c.json({ error: extra.error }, 400)
+  const sets = ['title = ?', 'points = COALESCE(?, points)']
+  const binds = [title, points]
+  if (max !== undefined) { sets.push('maxPerChild = ?'); binds.push(max) }
+  if ('expiresAt' in extra) { sets.push('expiresAt = ?'); binds.push(extra.expiresAt) }
+  if ('requiredStreak' in extra) { sets.push('requiredStreak = ?'); binds.push(extra.requiredStreak) }
+  const res = await c.env.DB
+    .prepare(`UPDATE reward SET ${sets.join(', ')} WHERE id = ? AND familyId = ? AND archivedAt IS NULL`)
+    .bind(...binds, c.req.param('id'), c.get('familyId'))
+    .run()
+  if (!res.meta?.changes) return c.json({ error: 'Ese premio no se puede editar.' }, 404)
+  return c.json({ ok: true })
+})
+
+/** Archive: gone from the lists; requests already made can still be handed over. */
+api.delete('/rewards/:id', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const res = await c.env.DB.prepare('UPDATE reward SET archivedAt = ? WHERE id = ? AND familyId = ? AND archivedAt IS NULL')
+    .bind(now(), c.req.param('id'), c.get('familyId')).run()
+  if (!res.meta?.changes) return c.json({ error: 'No encontrado.' }, 404)
+  return c.json({ ok: true })
 })
 
 // --------------------------------------------------------------- evidence

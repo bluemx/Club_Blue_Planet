@@ -36,7 +36,8 @@ export const kidCode = () => ({
       {
         method: 'POST',
         use: [sessionMiddleware],
-        body: z.object({ name: z.string().min(1).max(60) }),
+        // consent: the parent's OK to hold a child's data, asked the first time.
+        body: z.object({ name: z.string().min(1).max(60), consent: z.boolean().optional() }),
       },
       async (ctx) => {
         const db = ctx.context.options.database
@@ -44,6 +45,15 @@ export const kidCode = () => ({
 
         if (parent.role === 'kid') {
           throw new APIError('FORBIDDEN', { message: 'Solo una cuenta de adulto puede agregar hijos.' })
+        }
+
+        // Parental consent, once per adult, before the family holds a child's data.
+        const consented = await db.prepare('SELECT parentConsentAt FROM user WHERE id = ?').bind(parent.id).first()
+        if (!consented?.parentConsentAt) {
+          if (ctx.body.consent !== true) {
+            throw new APIError('BAD_REQUEST', { message: 'Falta tu consentimiento como padre, madre o tutor.' })
+          }
+          await db.prepare('UPDATE user SET parentConsentAt = ? WHERE id = ?').bind(Date.now(), parent.id).run()
         }
 
         // The user table needs a unique email; kids never use it to sign in.

@@ -29,7 +29,7 @@
           v-for="r in list"
           :key="r.id"
           class="bp-row"
-          :class="{ 'bp-row--locked': r.points > points || usedUp(r) }"
+          :class="{ 'bp-row--locked': r.points > points || usedUp(r) || needsStreak(r) }"
         >
           <div class="bp-row-badge" :class="r.color">
             <q-icon :name="r.icon" />
@@ -39,9 +39,15 @@
             <div class="bp-row-subtitle">
               <template v-if="usedUp(r)">Ya la canjeaste. Pídele a tus papás una nueva.</template>
               <template v-else>
-                {{ r.points > points ? `Te faltan ${r.points - points} puntos` : '¡Ya puedes canjearla!' }}
+                {{ r.points > points ? `Te faltan ${r.points - points} puntos` : needsStreak(r) ? 'Ya tienes los puntos' : '¡Ya puedes canjearla!' }}
                 <template v-if="left(r) > 1 && left(r) < Infinity"> · Te quedan {{ left(r) }}</template>
               </template>
+            </div>
+            <div v-if="!usedUp(r) && (r.requiredStreak || r.expiresAt)" class="bp-goal">
+              <span v-if="r.requiredStreak" :class="{ 'is-met': !needsStreak(r) }">
+                🔥 Racha de {{ r.requiredStreak }} días ({{ Math.min(streak, r.requiredStreak) }}/{{ r.requiredStreak }})
+              </span>
+              <span v-if="r.expiresAt" class="is-time">⏳ {{ daysLeft(r) }}</span>
             </div>
             <q-linear-progress
               v-if="!usedUp(r)"
@@ -53,7 +59,7 @@
           </div>
           <span v-if="usedUp(r)" class="bp-used"><q-icon name="check_circle" size="14px" /> Canjeada</span>
           <q-btn
-            v-else-if="r.points <= points"
+            v-else-if="r.points <= points && !needsStreak(r)"
             unelevated rounded no-caps size="sm"
             color="primary" label="Canjear"
             :loading="busyId === r.id"
@@ -87,6 +93,13 @@ const points = computed(() => summaryData.value?.totals?.points ?? 0)
 // Times left under the parent's limit; no limit = Infinity.
 const left = (r) => (r.maxPerChild == null ? Infinity : r.maxPerChild - (r.used ?? 0))
 const usedUp = (r) => left(r) <= 0
+// Goals the parent can add: a streak to reach, and a deadline.
+const streak = computed(() => summaryData.value?.children?.[0]?.streak ?? 0)
+const needsStreak = (r) => !!r.requiredStreak && streak.value < r.requiredStreak
+function daysLeft (r) {
+  const d = Math.ceil((r.expiresAt - Date.now()) / 864e5)
+  return d <= 1 ? '¡Último día!' : `Quedan ${d} días`
+}
 
 // A delivery, a rejection or a revert all move the balance on screen.
 const off = onNotification((n) => {
@@ -145,6 +158,25 @@ async function redeem (r) {
 .bp-row--locked {
   opacity: .7;
 }
+
+.bp-goal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.bp-goal span {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #FFF1E6;
+  color: #B8420A;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.bp-goal span.is-met { background: #E3FBEE; color: #16A66A; }
+.bp-goal span.is-time { background: #EAF2FF; color: #1467E4; }
 
 .bp-used {
   display: inline-flex;

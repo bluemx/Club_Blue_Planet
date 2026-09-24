@@ -1,12 +1,14 @@
 <template>
   <q-page class="bp-gradient-bg bp-page-pad">
     <PageHeader
-      title="Crear una misión"
-      :subtitle="['Inventa una misión para tu familia', 'y ponle los puntos que valga.']"
+      :title="editing ? 'Editar misión' : 'Crear una misión'"
+      :subtitle="editing
+        ? ['Los cambios aplican a lo que falta por hacer;', 'lo ya aprobado no cambia.']
+        : ['Inventa una misión para tu familia', 'y ponle los puntos que valga.']"
     />
 
     <!-- AI ideas: a topic from the parent, pitched at one child's age. -->
-    <div v-if="children.length" class="bp-sheet bp-ai">
+    <div v-if="children.length && !editing" class="bp-sheet bp-ai">
       <div class="bp-sheet-note">
         <q-icon name="auto_awesome" color="purple" size="26px" />
         Ideas para tu hijo
@@ -121,8 +123,18 @@
         <p v-if="error" class="bp-auth-error q-mb-sm">{{ error }}</p>
 
         <button type="submit" class="bp-submit" :disabled="!title.trim() || saving">
-          <OrnIcon /> {{ saving ? 'Guardando…' : 'Crear misión' }} <OrnIcon />
+          <OrnIcon /> {{ saving ? 'Guardando…' : editing ? 'Guardar cambios' : 'Crear misión' }} <OrnIcon />
         </button>
+        <q-btn
+          v-if="editing"
+          flat rounded no-caps
+          icon="archive" color="negative"
+          label="Archivar esta misión"
+          class="full-width q-mt-sm"
+          :loading="archiving"
+          @click="archive"
+        />
+        <p v-if="editing" class="bp-hint q-mt-xs">Archivarla la quita de las listas y detiene sus repeticiones. El historial se queda.</p>
       </q-form>
     </div>
 
@@ -137,16 +149,45 @@
 
 <script setup>
 import { ref, computed, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 import AssignDialog from '@/components/AssignDialog.vue'
 import KidPicker from '@/components/KidPicker.vue'
 import MissionRow from '@/components/MissionRow.vue'
 import { OrnIcon } from '@/components/authIcons'
-import { createMission, summary, aiIdeas, useResource } from '@/lib/api'
+import { createMission, updateMission, archiveMission, missions, summary, aiIdeas, useResource } from '@/lib/api'
 import { CATEGORIES } from '@/lib/categories'
 
 const router = useRouter()
+const route = useRoute()
+
+// ?edit=<id>: the same form, filled with one of the family's own missions.
+const editing = ref(null)
+async function loadEdit () {
+  const id = route.query.edit
+  if (!id) return
+  const m = (await missions()).missions.find(x => x.id === id && x.familyId)
+  if (!m) return
+  editing.value = m
+  title.value = m.title
+  subtitle.value = m.subtitle || ''
+  category.value = categories.find(c => c.icon === m.icon) ?? categories[categories.length - 1]
+  points.value = m.points
+}
+loadEdit()
+
+const archiving = ref(false)
+async function archive () {
+  archiving.value = true
+  try {
+    await archiveMission(editing.value.id)
+    router.push('/')
+  } catch (err) {
+    error.value = err.data?.error || 'No se pudo archivar.'
+  } finally {
+    archiving.value = false
+  }
+}
 
 const categories = CATEGORIES
 // Rough guide to what a mission is worth; the +/− fine-tunes it.
@@ -216,6 +257,17 @@ async function save () {
   error.value = ''
 
   try {
+    if (editing.value) {
+      await updateMission(editing.value.id, {
+        title: value,
+        subtitle: subtitle.value.trim() || null,
+        icon: category.value.icon,
+        color: category.value.color,
+        points: points.value,
+      })
+      router.push('/')
+      return
+    }
     created.value = await createMission({
       title: value,
       subtitle: subtitle.value.trim() || null,
