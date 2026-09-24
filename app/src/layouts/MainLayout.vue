@@ -150,7 +150,7 @@ async function announceUnlocks () {
   const me = currentUser.value
   if (!me || me.role !== 'kid') return
   const data = await apiFetch('/api/badges').catch(() => null)
-  if (!data) return
+  if (!Array.isArray(data?.badges)) return
 
   const earned = new Map(data.badges.filter(b => b.earned).map(b => [b.id, b]))
   const open = PIECES.filter(p => p.unlock && earned.has(p.unlock))

@@ -7,11 +7,42 @@
 
     <div class="bp-sheet">
       <q-form @submit.prevent="save">
+        <div class="bp-field-label">¿Qué hábito quieres reforzar?</div>
+        <div class="bp-cat-grid q-mb-md" role="radiogroup" aria-label="Categoría">
+          <button
+            v-for="c in categories"
+            :key="c.label"
+            type="button"
+            role="radio"
+            class="bp-cat"
+            :class="{ 'is-on': category.label === c.label }"
+            :aria-checked="category.label === c.label"
+            @click="category = c"
+          >
+            <span class="bp-row-badge" :class="c.color">
+              <q-icon :name="c.icon" />
+            </span>
+            <span class="bp-cat-label">{{ c.label }}</span>
+          </button>
+        </div>
+
         <div class="bp-field-label">¿Qué hay que hacer?</div>
+        <div v-if="category.ideas.length" class="bp-ideas" aria-label="Ideas">
+          <button
+            v-for="idea in category.ideas"
+            :key="idea"
+            type="button"
+            class="bp-idea"
+            :class="{ 'is-on': title === idea }"
+            @click="title = idea"
+          >
+            {{ idea }}
+          </button>
+        </div>
         <q-input
           v-model="title"
           outlined dense rounded hide-bottom-space
-          placeholder="Ej. Regar las plantas"
+          :placeholder="category.ideas.length ? 'O escribe la tuya' : 'Ej. Ayuda a tu abuela'"
           class="bp-field q-mb-md"
           maxlength="80"
         />
@@ -25,24 +56,19 @@
           maxlength="120"
         />
 
-        <div class="bp-field-label">Categoría</div>
-        <div class="bp-cat-grid q-mb-md">
+        <div class="bp-field-label">¿Cuántos puntos vale?</div>
+        <div class="bp-presets">
           <button
-            v-for="c in categories"
-            :key="c.label"
+            v-for="p in PRESETS"
+            :key="p.points"
             type="button"
-            class="bp-cat"
-            :class="{ 'is-on': category.label === c.label }"
-            @click="category = c"
+            class="bp-preset"
+            :class="{ 'is-on': points === p.points }"
+            @click="points = p.points"
           >
-            <span class="bp-row-badge" :class="c.color">
-              <q-icon :name="c.icon" />
-            </span>
-            <span class="bp-cat-label">{{ c.label }}</span>
+            <strong>{{ p.points }}</strong> {{ p.label }}
           </button>
         </div>
-
-        <div class="bp-field-label">¿Cuántos puntos vale?</div>
         <div class="bp-points-row q-mb-md">
           <q-btn round flat dense icon="remove" color="primary" @click="bump(-10)" />
           <span class="bp-points-value">
@@ -76,16 +102,16 @@ import PageHeader from '@/components/PageHeader.vue'
 import AssignDialog from '@/components/AssignDialog.vue'
 import { OrnIcon } from '@/components/authIcons'
 import { createMission, summary, useResource } from '@/lib/api'
+import { CATEGORIES } from '@/lib/categories'
 
 const router = useRouter()
 
-const categories = [
-  { label: 'Orden', icon: 'bed', color: 'blue' },
-  { label: 'Higiene', icon: 'clean_hands', color: 'green' },
-  { label: 'Escuela', icon: 'school', color: 'amber' },
-  { label: 'Lectura', icon: 'menu_book', color: 'purple' },
-  { label: 'Ejercicio', icon: 'directions_run', color: 'green' },
-  { label: 'Casa', icon: 'cleaning_services', color: 'pink' },
+const categories = CATEGORIES
+// Rough guide to what a mission is worth; the +/− fine-tunes it.
+const PRESETS = [
+  { points: 20, label: 'fácil' },
+  { points: 50, label: 'normal' },
+  { points: 100, label: 'reto' },
 ]
 
 const title = ref('')
@@ -139,6 +165,43 @@ function onAssigned () {
   gap: 6px;
 }
 
+@media (min-width: 600px) {
+  .bp-cat-grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.bp-ideas,
+.bp-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.bp-idea,
+.bp-preset {
+  padding: 7px 12px;
+  border: 1.5px solid #E1ECFA;
+  border-radius: 999px;
+  background: #fff;
+  color: #55708F;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.bp-preset { flex: 1; }
+.bp-preset strong { color: #0B2A5B; }
+
+.bp-idea.is-on,
+.bp-preset.is-on {
+  border-color: #1467E4;
+  background: #EAF2FF;
+  color: #1467E4;
+}
+
+.bp-preset.is-on strong { color: #1467E4; }
+
 .bp-cat {
   display: flex;
   flex-direction: column;
@@ -159,6 +222,8 @@ function onAssigned () {
 }
 
 .bp-cat-label {
+  text-align: center;
+  line-height: 1.15;
   font-size: 10.5px;
   font-weight: 700;
   color: #55708F;

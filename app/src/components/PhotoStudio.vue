@@ -219,13 +219,13 @@ const WORDS = [
   ['¡GUÁCALA!', '#B6F03C', '#6B3FA0'],
 ]
 
-const EMOJI = ['🌱', '🌳', '🌍', '♻️', '💧', '⭐', '🦋', '🌈', '🐝', '☀️']
+const EMOJI = ['⭐', '💪', '🎉', '👍', '🏆', '❤️', '😎', '🔥', '✨', '🌈']
 const emoji = (e) => svgUri(`<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><text x="100" y="100" dy="52" text-anchor="middle" font-size="150">${e}</text></svg>`)
 
 const groups = computed(() => [
   { key: 'caras', label: 'Mis caras', items: MOODS.map(faceSticker) },
   { key: 'palabras', label: '¡Onomatopeyas!', items: WORDS.map(burst) },
-  { key: 'planeta', label: 'Planeta', items: EMOJI.map(emoji) },
+  { key: 'divertidos', label: 'Divertidos', items: EMOJI.map(emoji) },
 ])
 const group = ref('caras')
 const currentGroup = computed(() => groups.value.find(g => g.key === group.value))
