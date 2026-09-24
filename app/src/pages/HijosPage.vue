@@ -51,10 +51,17 @@
           v-for="child in children"
           :key="child.id"
           :title="child.name"
-          :subtitle="`${child.points} puntos`"
+          :subtitle="[ageOf(child) ? `${ageOf(child)} años` : '', `${child.points} puntos`].filter(Boolean).join(' · ')"
           :kid="child"
         >
           <template #trailing>
+            <q-btn
+              flat round dense icon="cake" :color="child.birthYear ? 'primary' : 'grey-5'"
+              :aria-label="`Edad de ${child.name}`"
+              @click="openAge(child)"
+            >
+              <q-tooltip>{{ child.birthYear ? 'Cambiar edad' : 'Agregar edad' }}</q-tooltip>
+            </q-btn>
             <q-btn
               flat round dense icon="pin" color="primary"
               :to="`/perfil/codigo-infantil?hijo=${child.id}`"
@@ -105,6 +112,28 @@
 
     <JoinFamilyDialog v-model="confirmOpen" :plan="plan" :loading="joining" @confirm="confirm" />
 
+    <!-- Age: the AI mission ideas are pitched at it. -->
+    <q-dialog v-model="ageOpen">
+      <div class="bp-confirm">
+        <h2 class="bp-confirm-title">¿Cuántos años tiene {{ ageChild?.name }}?</h2>
+        <p class="bp-confirm-text">Así las ideas de misiones van de acuerdo a su edad.</p>
+        <div class="bp-ages">
+          <button
+            v-for="a in AGES"
+            :key="a"
+            type="button"
+            class="bp-age"
+            :class="{ 'is-on': ageOf(ageChild) === a }"
+            :disabled="savingAge"
+            @click="saveAge(a)"
+          >
+            {{ a }}
+          </button>
+        </div>
+        <p v-if="ageError" class="bp-auth-error q-mt-sm">{{ ageError }}</p>
+      </div>
+    </q-dialog>
+
     <q-dialog v-model="removeOpen">
       <div class="bp-confirm">
         <h2 class="bp-confirm-title">¿Eliminar a {{ removing?.name }}?</h2>
@@ -136,7 +165,7 @@ import JoinFamilyDialog from '@/components/JoinFamilyDialog.vue'
 import { OrnIcon } from '@/components/authIcons'
 import { apiFetch } from '@/lib/auth'
 import { invalidateSession } from '@/lib/session'
-import { summary, useResource } from '@/lib/api'
+import { summary, useResource, setChildBirthYear } from '@/lib/api'
 import { useJoinFamily } from '@/lib/joinFamily'
 
 const router = useRouter()
@@ -155,6 +184,35 @@ const addError = ref('')
 const {
   joinCode, checking, joining, joinError, plan, confirmOpen, start, confirm,
 } = useJoinFamily((res) => (res.merged && res.movedChildren ? reload() : router.push('/')))
+
+// ------------------------------------------------------------------ age
+const AGES = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+const thisYear = new Date().getFullYear()
+const ageOf = (child) => (child?.birthYear ? thisYear - child.birthYear : null)
+const ageOpen = ref(false)
+const ageChild = ref(null)
+const savingAge = ref(false)
+const ageError = ref('')
+
+function openAge (child) {
+  ageChild.value = child
+  ageError.value = ''
+  ageOpen.value = true
+}
+
+async function saveAge (age) {
+  savingAge.value = true
+  ageError.value = ''
+  try {
+    await setChildBirthYear(ageChild.value.id, thisYear - age)
+    ageOpen.value = false
+    await reload({ quiet: true })
+  } catch (err) {
+    ageError.value = err.data?.error || 'No se pudo guardar.'
+  } finally {
+    savingAge.value = false
+  }
+}
 
 const removeOpen = ref(false)
 const removing = ref(null)
@@ -204,3 +262,9 @@ async function add () {
   }
 }
 </script>
+
+<style scoped>
+.bp-ages { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.bp-age { padding: 12px 0; border: 1.5px solid #E1ECFA; border-radius: 14px; background: linear-gradient(180deg, #fff, #F2F7FF); color: #0B2A5B; font: inherit; font-size: 17px; font-weight: 800; cursor: pointer; }
+.bp-age.is-on { border-color: #1467E4; background: #EAF2FF; color: #1467E4; }
+</style>

@@ -5,7 +5,60 @@
       :subtitle="['Inventa una misión para tu familia', 'y ponle los puntos que valga.']"
     />
 
-    <div class="bp-sheet">
+    <!-- AI ideas: a topic from the parent, pitched at one child's age. -->
+    <div v-if="children.length" class="bp-sheet bp-ai">
+      <div class="bp-sheet-note">
+        <q-icon name="auto_awesome" color="purple" size="26px" />
+        Ideas con IA para tu hijo
+      </div>
+
+      <KidPicker v-if="children.length > 1" v-model="aiChild" :children="children" label="¿Para quién?" class="q-mb-sm" />
+      <p v-if="aiKid && !aiKid.birthYear" class="bp-ai-hint">
+        Sin edad registrada. <router-link to="/hijos">Agrégala en Hijos</router-link> para ideas a su medida.
+      </p>
+
+      <div class="bp-field-label">¿Qué quieres trabajar?</div>
+      <div class="bp-ideas">
+        <button
+          v-for="t in TOPICS"
+          :key="t"
+          type="button"
+          class="bp-idea"
+          :class="{ 'is-on': topic === t }"
+          @click="topic = t"
+        >
+          {{ t }}
+        </button>
+      </div>
+      <q-input
+        v-model="topic"
+        outlined dense rounded hide-bottom-space
+        placeholder="O escribe otro tema"
+        class="bp-field q-mb-sm"
+        maxlength="80"
+      />
+      <button type="button" class="bp-submit bp-ai-go" :disabled="!topic.trim() || aiLoading || !aiChild" @click="askAi">
+        <q-icon name="auto_awesome" size="18px" /> {{ aiLoading ? 'Pensando ideas…' : 'Sugerir misiones' }}
+      </button>
+      <p v-if="aiError" class="bp-auth-error q-mt-sm q-mb-none">{{ aiError }}</p>
+
+      <div v-if="aiResults.length" class="q-mt-md">
+        <div class="bp-field-label">Toca una para usarla</div>
+        <MissionRow
+          v-for="(i, n) in aiResults"
+          :key="n"
+          :title="i.title"
+          :subtitle="i.subtitle"
+          :icon="i.icon"
+          :color="i.color"
+          :points="i.points"
+          tappable
+          @click="useIdea(i)"
+        />
+      </div>
+    </div>
+
+    <div ref="formSheet" class="bp-sheet">
       <q-form @submit.prevent="save">
         <div class="bp-field-label">¿Qué hábito quieres reforzar?</div>
         <div class="bp-cat-grid q-mb-md" role="radiogroup" aria-label="Categoría">
@@ -96,12 +149,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 import AssignDialog from '@/components/AssignDialog.vue'
+import KidPicker from '@/components/KidPicker.vue'
+import MissionRow from '@/components/MissionRow.vue'
 import { OrnIcon } from '@/components/authIcons'
-import { createMission, summary, useResource } from '@/lib/api'
+import { createMission, summary, aiIdeas, useResource } from '@/lib/api'
 import { CATEGORIES } from '@/lib/categories'
 
 const router = useRouter()
@@ -126,6 +181,43 @@ const created = ref(null)
 
 const { data: summaryData } = useResource(summary)
 const children = computed(() => summaryData.value?.children ?? [])
+
+// ------------------------------------------------------------ AI ideas
+const TOPICS = ['Mejorar su higiene', 'Ser responsable', 'Aprender algo nuevo', 'Ayudar en casa', 'Comer mejor', 'Moverse más', 'Llevarse bien con sus hermanos']
+const topic = ref('')
+const aiChild = ref('')
+const aiKid = computed(() => children.value.find(k => k.id === aiChild.value))
+const aiLoading = ref(false)
+const aiError = ref('')
+const aiResults = ref([])
+const formSheet = ref(null)
+
+watch(children, (list) => { if (!aiChild.value && list.length) aiChild.value = list[0].id }, { immediate: true })
+
+async function askAi () {
+  aiLoading.value = true
+  aiError.value = ''
+  aiResults.value = []
+  try {
+    aiResults.value = (await aiIdeas(aiChild.value, topic.value.trim())).ideas
+  } catch (err) {
+    aiError.value = err.status === 429
+      ? 'Pediste muchas ideas seguidas. Espera unos minutos.'
+      : err.data?.error || 'No se pudieron pedir ideas.'
+  } finally {
+    aiLoading.value = false
+  }
+}
+
+// Fill the form below with the idea; the parent reviews it and saves.
+async function useIdea (i) {
+  title.value = i.title
+  subtitle.value = i.subtitle || ''
+  category.value = categories.find(c => c.icon === i.icon) ?? categories[categories.length - 1]
+  points.value = i.points
+  await nextTick()
+  formSheet.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 const bump = (n) => { points.value = Math.min(500, Math.max(10, points.value + n)) }
 
@@ -159,6 +251,23 @@ function onAssigned () {
 </script>
 
 <style scoped>
+.bp-ai {
+  border: 1.5px solid #E4DAFF;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8F4FF 100%);
+}
+
+.bp-ai-hint {
+  margin: 0 0 8px;
+  color: #7A5400;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.bp-ai-go {
+  background: linear-gradient(180deg, #A98BFF 0%, #7445EA 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -2px 0 rgba(70, 30, 160, .45), 0 14px 24px -10px rgba(124, 77, 239, .6);
+}
+
 .bp-cat-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

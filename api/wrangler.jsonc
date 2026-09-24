@@ -21,6 +21,8 @@
   ],
   // Cloudflare Email Sending. Delivery to non-verified recipients requires
   // the sending domain to be onboarded in the dashboard first.
+  // Workers AI: mission ideas for a child's age and a parent's topic.
+  "ai": { "binding": "AI" },
   "send_email": [
     { "name": "EMAIL" }
   ],
