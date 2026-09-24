@@ -71,22 +71,16 @@
 import { ref } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { proposeMission } from '@/lib/api'
+import { CATEGORIES } from '@/lib/categories'
 
 const title = ref('')
 const saving = ref(false)
 const error = ref('')
 const sent = ref(false)
-const category = ref('Orden')
+const category = ref(CATEGORIES[0].label)
 const difficulty = ref('facil')
 
-const categories = [
-  { label: 'Orden', icon: 'bed', color: 'blue' },
-  { label: 'Higiene', icon: 'clean_hands', color: 'green' },
-  { label: 'Escuela', icon: 'school', color: 'amber' },
-  { label: 'Lectura', icon: 'menu_book', color: 'purple' },
-  { label: 'Ejercicio', icon: 'directions_run', color: 'green' },
-  { label: 'Casa', icon: 'cleaning_services', color: 'pink' },
-]
+const categories = CATEGORIES
 
 async function send () {
   const value = title.value.trim()
@@ -150,6 +144,8 @@ async function send () {
 }
 
 .bp-cat-label {
+  text-align: center;
+  line-height: 1.15;
   font-size: 10.5px;
   font-weight: 700;
   color: #55708F;
