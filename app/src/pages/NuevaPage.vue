@@ -9,7 +9,7 @@
     <div v-if="children.length" class="bp-sheet bp-ai">
       <div class="bp-sheet-note">
         <q-icon name="auto_awesome" color="purple" size="26px" />
-        Ideas con IA para tu hijo
+        Ideas para tu hijo
       </div>
 
       <KidPicker v-if="children.length > 1" v-model="aiChild" :children="children" label="¿Para quién?" class="q-mb-sm" />
@@ -38,12 +38,12 @@
         maxlength="80"
       />
       <button type="button" class="bp-submit bp-ai-go" :disabled="!topic.trim() || aiLoading || !aiChild" @click="askAi">
-        <q-icon name="auto_awesome" size="18px" /> {{ aiLoading ? 'Pensando ideas…' : 'Sugerir misiones' }}
+        <q-icon name="auto_awesome" size="18px" /> {{ aiLoading ? 'Buscando ideas…' : 'Darme ideas' }}
       </button>
       <p v-if="aiError" class="bp-auth-error q-mt-sm q-mb-none">{{ aiError }}</p>
 
       <div v-if="aiResults.length" class="q-mt-md">
-        <div class="bp-field-label">Toca una para usarla</div>
+        <div class="bp-field-label">Toca una para usarla abajo</div>
         <MissionRow
           v-for="(i, n) in aiResults"
           :key="n"
@@ -60,42 +60,11 @@
 
     <div ref="formSheet" class="bp-sheet">
       <q-form @submit.prevent="save">
-        <div class="bp-field-label">¿Qué hábito quieres reforzar?</div>
-        <div class="bp-cat-grid q-mb-md" role="radiogroup" aria-label="Categoría">
-          <button
-            v-for="c in categories"
-            :key="c.label"
-            type="button"
-            role="radio"
-            class="bp-cat"
-            :class="{ 'is-on': category.label === c.label }"
-            :aria-checked="category.label === c.label"
-            @click="category = c"
-          >
-            <span class="bp-row-badge" :class="c.color">
-              <q-icon :name="c.icon" />
-            </span>
-            <span class="bp-cat-label">{{ c.label }}</span>
-          </button>
-        </div>
-
         <div class="bp-field-label">¿Qué hay que hacer?</div>
-        <div v-if="category.ideas.length" class="bp-ideas" aria-label="Ideas">
-          <button
-            v-for="idea in category.ideas"
-            :key="idea"
-            type="button"
-            class="bp-idea"
-            :class="{ 'is-on': title === idea }"
-            @click="title = idea"
-          >
-            {{ idea }}
-          </button>
-        </div>
         <q-input
           v-model="title"
           outlined dense rounded hide-bottom-space
-          :placeholder="category.ideas.length ? 'O escribe la tuya' : 'Ej. Ayuda a tu abuela'"
+          placeholder="Elige una idea de arriba o escribe la tuya"
           class="bp-field q-mb-md"
           maxlength="80"
         />
@@ -129,6 +98,24 @@
             {{ points }}
           </span>
           <q-btn round flat dense icon="add" color="primary" @click="bump(10)" />
+        </div>
+
+        <!-- Sets the mission's icon (and the badges it counts for). An idea
+             picks it on its own; it's here to change, not to start from. -->
+        <div class="bp-field-label">Tipo</div>
+        <div class="bp-types q-mb-md" role="radiogroup" aria-label="Tipo de misión">
+          <button
+            v-for="c in categories"
+            :key="c.label"
+            type="button"
+            role="radio"
+            class="bp-type"
+            :class="[c.color, { 'is-on': category.label === c.label }]"
+            :aria-checked="category.label === c.label"
+            @click="category = c"
+          >
+            <q-icon :name="c.icon" size="16px" /> {{ c.label }}
+          </button>
         </div>
 
         <p v-if="error" class="bp-auth-error q-mb-sm">{{ error }}</p>
@@ -251,6 +238,35 @@ function onAssigned () {
 </script>
 
 <style scoped>
+.bp-types {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 2px 2px 6px;
+  scrollbar-width: none;
+}
+
+.bp-types::-webkit-scrollbar { display: none; }
+
+.bp-type {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 11px;
+  border: 1.5px solid #E1ECFA;
+  border-radius: 999px;
+  background: #fff;
+  color: #55708F;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.bp-type.is-on { border-color: #1467E4; background: #EAF2FF; color: #1467E4; }
+
 .bp-ai {
   border: 1.5px solid #E4DAFF;
   background: linear-gradient(180deg, #FFFFFF 0%, #F8F4FF 100%);
