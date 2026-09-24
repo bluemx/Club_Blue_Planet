@@ -8,11 +8,5 @@
     // Router is in hash mode, so deep links never hit the server as paths —
     // this only covers someone typing a stray path directly.
     "not_found_handling": "single-page-application"
-  },
-  "env": {
-    "staging": {
-      "name": "clubblueplanet-app-staging",
-      "assets": { "directory": "./dist/staging", "not_found_handling": "single-page-application" }
-    }
   }
 }

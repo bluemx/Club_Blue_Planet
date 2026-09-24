@@ -9,9 +9,7 @@
   "scripts": {
     "dev": "quasar dev",
     "build": "quasar build",
-    "postinstall": "quasar prepare --silent",
-    "build:staging": "VITE_API_URL=https://clubblueplanet-staging.ealbinu.workers.dev API_ORIGIN=https://clubblueplanet-staging.ealbinu.workers.dev DIST_DIR=dist/staging quasar build",
-    "deploy:staging": "npm run build:staging && wrangler deploy --env staging"
+    "postinstall": "quasar prepare --silent"
   },
   "dependencies": {
     "@dicebear/adventurer-neutral": "9.4.3",
