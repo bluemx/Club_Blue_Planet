@@ -702,7 +702,7 @@ api.post('/suggestions/ai', aiLimit, async (c) => {
     'Cada idea: {"title": máx 45 caracteres, en imperativo y dirigido al niño (tú); "subtitle": una pista corta de cómo hacerlo, máx 70 caracteres; "category": una de ' + Object.keys(AI_CATEGORIES).join(', ') + '; "points": 20 (fácil), 50 (normal) o 100 (reto)}.',
     'Deben ser concretas, posibles en casa o la escuela en un día, y adecuadas a la edad: a los 3 a 6 años, cosas muy simples y cortas; de 10 en adelante, más autonomía.',
     'Seguridad primero: nada de productos de limpieza o químicos, cuchillos, estufa, fuego, salir solo a la calle, ni pantallas como premio. Si algo requiere un adulto, dilo en la pista.',
-    'Nunca propongas nada sobre dinero: ni ahorrar, ni vender, ni presupuestos, ni cobrar; los puntos de la app son el único premio.',
+    'Temas de dinero (ahorrar, planear un gasto, entender precios) están bien si son adecuados a la edad y con un adulto.',
   ].join(' ')
   const user = `Niño/a${age ? ` de ${age} años` : ' (edad desconocida, piensa en 6 a 10 años)'}. Tema que quieren trabajar sus papás: "${topic}".`
 
@@ -738,8 +738,7 @@ api.post('/suggestions/ai', aiLimit, async (c) => {
         points: [20, 50, 100].includes(p) ? p : 50,
       }
     })
-    // The model sometimes drifts into money despite the prompt; drop those.
-    .filter(i => i.title && !/dinero|ahorr|presupuest|monetiz|vend|cobr|pesos|negocio/i.test(`${i.title} ${i.subtitle}`))
+    .filter(i => i.title)
     .slice(0, 5)
 
   if (!ideas.length) return c.json({ error: 'No salieron ideas esta vez. Inténtalo de nuevo.' }, 502)
