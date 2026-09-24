@@ -32,7 +32,7 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import AuthShell from '@/components/AuthShell.vue'
 import CodeInput from '@/components/CodeInput.vue'
 import { OrnIcon } from '@/components/authIcons'
@@ -41,6 +41,13 @@ import { enterApp, ENTER_FAILED } from '@/lib/session'
 
 const router = useRouter()
 const code = ref('')
+
+// Opened from the parent's QR: the code comes in the link, sign in right away.
+const fromQr = String(useRoute().query.code || '').replace(/\D/g, '')
+if (fromQr.length === 6) {
+  code.value = fromQr
+  setTimeout(() => onComplete(fromQr))
+}
 const error = ref('')
 
 const loading = ref(false)

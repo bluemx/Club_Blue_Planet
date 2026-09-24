@@ -17,6 +17,7 @@ const routes = [
       { path: 'tutores', component: () => import('@/pages/TutoresPage.vue') },
       { path: 'pendientes', component: () => import('@/pages/PendientesPage.vue') },
       { path: 'perfil', component: () => import('@/pages/PerfilPage.vue') },
+      { path: 'reporte', component: () => import('@/pages/ReportePage.vue') },
       { path: 'perfil/codigo-infantil', component: () => import('@/pages/CodigoInfantilPage.vue') },
 
       // Kid area — same shell, shorter nav (see MainLayout)

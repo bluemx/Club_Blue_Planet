@@ -8,7 +8,8 @@ import { emailOTPClient } from 'better-auth/client/plugins'
 // own origin when the native app lands.
 export const API_URL = import.meta.env.DEV
   ? 'http://localhost:8787'
-  : 'https://clubblueplanet.ealbinu.workers.dev'
+  // Vite exposes VITE_* from the environment; staging builds set it.
+  : (import.meta.env.VITE_API_URL || 'https://clubblueplanet.ealbinu.workers.dev')
 
 export const authClient = createAuthClient({
   baseURL: `${API_URL}/api/auth`,

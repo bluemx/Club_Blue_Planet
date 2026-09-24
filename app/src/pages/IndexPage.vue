@@ -5,6 +5,30 @@
       :subtitle="['Así van tus hijos', 'y sus misiones.']"
     />
 
+    <!-- First steps: until the family is really going, one checklist. -->
+    <div v-if="stepsLeft" class="bp-sheet bp-start">
+      <div class="bp-start-head">
+        <strong>Primeros pasos</strong>
+        <span>{{ stepsDone }} de {{ STEPS.length }}</span>
+        <q-btn flat round dense size="sm" icon="close" color="grey-6" aria-label="Ocultar" @click="hideSteps" />
+      </div>
+      <q-linear-progress rounded size="6px" :value="stepsDone / STEPS.length" color="secondary" track-color="blue-1" class="q-mb-sm" />
+      <router-link
+        v-for="s in STEPS"
+        :key="s.key"
+        :to="s.to"
+        class="bp-step"
+        :class="{ 'is-done': steps[s.key] }"
+      >
+        <q-icon :name="steps[s.key] ? 'check_circle' : 'radio_button_unchecked'" size="22px" />
+        <span class="col">
+          <span class="bp-step-title">{{ s.title }}</span>
+          <span v-if="!steps[s.key]" class="bp-step-hint">{{ s.hint }}</span>
+        </span>
+        <q-icon v-if="!steps[s.key]" name="chevron_right" size="20px" />
+      </router-link>
+    </div>
+
     <div class="bp-dash">
       <q-inner-loading :showing="loadingKids" />
 
@@ -19,6 +43,7 @@
         <span class="bp-tile-meta">
           {{ k.active ? `${k.active} ${k.active === 1 ? 'misión activa' : 'misiones activas'}` : 'Sin misiones activas' }}
         </span>
+        <span v-if="k.streak" class="bp-tile-streak">🔥 {{ k.streak }} {{ k.streak === 1 ? 'día' : 'días' }} seguidos</span>
         <span v-if="k.review" class="bp-tile-flag">{{ k.review }} por revisar</span>
       </div>
 
@@ -42,6 +67,13 @@
         </span>
         <span v-if="totals.review" class="bp-tile-flag">{{ totals.review }} por revisar</span>
         <span class="bp-tile-cta">Ver misiones <q-icon name="chevron_right" size="16px" /></span>
+      </router-link>
+
+      <router-link to="/reporte" class="bp-tile bp-tile--action bp-tile--wide">
+        <span class="bp-row-badge green"><q-icon name="insights" /></span>
+        <span class="bp-tile-title">Reporte de la semana</span>
+        <span class="bp-tile-meta">Cómo les fue, cuánto avanzaron y sus rachas</span>
+        <span class="bp-tile-cta">Ver reporte <q-icon name="chevron_right" size="16px" /></span>
       </router-link>
     </div>
 
@@ -84,7 +116,17 @@
               :points="m.points"
               tappable
               @click="openAssign(m)"
-            />
+            >
+              <template #trailing>
+                <div class="bp-points-pill"><q-icon name="star" size="14px" /> +{{ m.points }}</div>
+                <q-btn
+                  flat round dense icon="edit" color="primary" size="sm"
+                  :to="`/nueva?edit=${m.id}`"
+                  :aria-label="`Editar ${m.title}`"
+                  @click.stop
+                />
+              </template>
+            </MissionRow>
           </template>
         </div>
 
@@ -109,7 +151,7 @@ import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import AssignDialog from '@/components/AssignDialog.vue'
 import KidAvatar from '@/components/KidAvatar.vue'
-import { missions, summary, assignments, useResource } from '@/lib/api'
+import { missions, summary, assignments, onboarding, useResource } from '@/lib/api'
 import { onNotification } from '@/lib/notifications'
 
 const { data: catalog, loading: loadingCatalog } = useResource(missions)
@@ -149,6 +191,24 @@ const off = onNotification((n) => {
 })
 onBeforeUnmount(off)
 
+// ------------------------------------------------------------ first steps
+const STEPS = [
+  { key: 'child', title: 'Agrega a tus hijos', hint: 'Con su nombre, en Hijos.', to: '/hijos' },
+  { key: 'age', title: 'Pon la edad de cada uno', hint: 'Así las ideas de misiones van a su medida.', to: '/hijos' },
+  { key: 'kidIn', title: 'Que tu hijo entre a su cuenta', hint: 'Muéstrale el código o el QR.', to: '/perfil/codigo-infantil' },
+  { key: 'mission', title: 'Asigna su primera misión', hint: 'Mejor si se repite: así se vuelve hábito.', to: '/nueva' },
+  { key: 'reward', title: 'Crea un premio', hint: 'Algo por lo que valga la pena juntar puntos.', to: '/recompensas' },
+]
+const { data: onboardingData } = useResource(onboarding)
+const steps = computed(() => onboardingData.value?.steps ?? {})
+const stepsDone = computed(() => STEPS.filter(s => steps.value[s.key]).length)
+const hidden = ref((() => { try { return localStorage.getItem('bp-steps-hidden') === '1' } catch { return false } })())
+const stepsLeft = computed(() => !hidden.value && onboardingData.value && stepsDone.value < STEPS.length)
+function hideSteps () {
+  hidden.value = true
+  try { localStorage.setItem('bp-steps-hidden', '1') } catch { /* private mode */ }
+}
+
 const suggestOpen = ref(false)
 const assignOpen = ref(false)
 const picked = ref(null)
@@ -168,6 +228,44 @@ function onAssigned ({ mission, names }) {
 </script>
 
 <style scoped>
+.bp-start { margin-bottom: 14px; }
+
+.bp-start-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: #0B2A5B;
+  font-size: 15px;
+}
+
+.bp-start-head span { margin-left: auto; color: #6F86A8; font-size: 12px; font-weight: 700; }
+
+.bp-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 4px;
+  border-top: 1px solid #EEF3FB;
+  color: #1467E4;
+  text-decoration: none;
+}
+
+.bp-step .col { display: flex; flex-direction: column; min-width: 0; }
+.bp-step-title { color: #0B2A5B; font-size: 13.5px; font-weight: 800; }
+.bp-step-hint { color: #6F86A8; font-size: 12px; font-weight: 600; }
+.bp-step.is-done { color: #16A66A; }
+.bp-step.is-done .bp-step-title { color: #7C93B5; text-decoration: line-through; }
+
+.bp-tile-streak {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #FFF1E6;
+  color: #D9480F;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
 .bp-dash {
   position: relative;
   display: grid;

@@ -13,6 +13,15 @@
       <span class="bp-me-cta"><q-icon name="edit" size="16px" /> ¡Demuéstralo con tu avatar!</span>
     </router-link>
 
+    <!-- The streak: why today's missions matter. -->
+    <div v-if="streak" class="bp-sheet bp-streak">
+      <span class="bp-streak-fire">🔥</span>
+      <span class="col">
+        <strong>¡{{ streak }} {{ streak === 1 ? 'día' : 'días' }} seguidos!</strong>
+        <span>{{ doneToday ? '¡Hoy ya cumpliste! Vuelve mañana.' : 'Haz una misión hoy para no perder tu racha.' }}</span>
+      </span>
+    </div>
+
     <div class="bp-sheet">
       <div class="bp-sheet-note bp-note-warn">
         <q-icon name="family_restroom" color="primary" size="26px" />
@@ -55,9 +64,15 @@ import { computed } from 'vue'
 import PageHeader from '@/components/PageHeader.vue'
 import KidAvatar from '@/components/KidAvatar.vue'
 import { currentUser as me } from '@/lib/session'
-import { assignments, useResource } from '@/lib/api'
+import { assignments, summary, useResource } from '@/lib/api'
 
 const { data, loading, error } = useResource(assignments)
+const { data: summaryData } = useResource(summary)
+const streak = computed(() => summaryData.value?.children?.[0]?.streak ?? 0)
+// Mexico City day, like the API's streak.
+const today = () => new Date(Date.now() - 6 * 3600e3).toISOString().slice(0, 10)
+const doneToday = computed(() => (data.value?.assignments ?? [])
+  .some(a => a.reportedAt && new Date(a.reportedAt - 6 * 3600e3).toISOString().slice(0, 10) === today()))
 // The API sends newest first.
 const latest = computed(() =>
   (data.value?.assignments ?? []).filter(a => a.status === 'pendiente').slice(0, 3)
@@ -68,6 +83,19 @@ const latest = computed(() =>
 .bp-note-warn {
   align-items: flex-start;
 }
+
+.bp-streak {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #FFF4E6 0%, #FFE3C7 100%);
+  border: 1.5px solid #FFD0A1;
+}
+
+.bp-streak-fire { font-size: 34px; line-height: 1; }
+.bp-streak .col { display: flex; flex-direction: column; min-width: 0; }
+.bp-streak strong { color: #B8420A; font-size: 17px; font-weight: 900; }
+.bp-streak span:not(.bp-streak-fire) { color: #8A5A2B; font-size: 12.5px; font-weight: 700; }
 
 .bp-moods {
   font-size: 20px;

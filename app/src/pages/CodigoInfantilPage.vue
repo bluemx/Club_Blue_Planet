@@ -26,6 +26,12 @@
         <span v-for="(char, i) in code" :key="i" class="bp-code-char">{{ char }}</span>
       </div>
 
+      <!-- The same code as a QR: your child points their phone's camera at it. -->
+      <div v-if="qr" class="bp-qr">
+        <img :src="qr" alt="Código QR para que tu hijo entre" width="176" height="176" />
+        <span>O que escanee este QR con la cámara de su teléfono</span>
+      </div>
+
       <p v-if="error" class="bp-auth-error">{{ error }}</p>
 
       <p class="bp-code-expiry">
@@ -90,6 +96,7 @@ const steps = [
 const children = ref([])
 const childId = ref('')
 const code = ref('······')
+const qr = ref('')
 const expiresIn = ref('—')
 const copied = ref(false)
 const error = ref('')
@@ -117,6 +124,11 @@ async function regenerate () {
     })
     code.value = issued.code
     expiresIn.value = formatRemaining(issued.expiresAt)
+    // Opens the kid sign-in with the code already in; it's the same secret as
+    // the 6 digits on screen, so it's shown only here, to the parent.
+    const { default: QRCode } = await import('qrcode')
+    const url = `${location.origin}${location.pathname}#/cuenta-infantil?code=${issued.code}`
+    qr.value = await QRCode.toDataURL(url, { width: 352, margin: 1, color: { dark: '#0B2A5B', light: '#FFFFFF' } })
   } catch (err) {
     error.value = err.status === 401
       ? 'Tu sesión expiró. Vuelve a iniciar sesión.'
@@ -156,6 +168,21 @@ onUnmounted(() => clearTimeout(copyTimer))
 </script>
 
 <style scoped>
+.bp-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 4px;
+}
+
+.bp-qr img {
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px #E1ECFA, 0 10px 22px -12px rgba(20, 103, 228, .5);
+}
+
+.bp-qr span { color: #6F86A8; font-size: 12px; font-weight: 700; text-align: center; }
+
 .bp-code-display {
   display: flex;
   gap: 6px;

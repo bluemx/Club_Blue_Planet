@@ -5,6 +5,53 @@
       :subtitle="['Revisa el progreso de las misiones', 'y aprueba las tareas completadas.']"
     />
 
+    <!-- Recurring missions: they come back by themselves; change days or stop here. -->
+    <div v-if="routineList.length" class="bp-sheet">
+      <div class="bp-sheet-note">
+        <q-icon name="event_repeat" color="primary" size="26px" />
+        Misiones que se repiten
+      </div>
+      <MissionRow
+        v-for="r in routineList"
+        :key="r.id"
+        :by="{ id: r.childId, avatar: r.childAvatar }"
+        :title="r.title"
+        :subtitle="`${r.childName} · cada ${r.label}`"
+        :icon="r.icon"
+        :color="r.color"
+        :points="r.points"
+      >
+        <template #trailing>
+          <q-btn flat round dense icon="edit_calendar" color="primary" :aria-label="`Cambiar días de ${r.title}`" @click="openDays(r)" />
+          <q-btn flat round dense icon="stop_circle" color="grey-6" :aria-label="`Dejar de repetir ${r.title}`" :loading="stoppingId === r.id" @click="stop(r)" />
+        </template>
+      </MissionRow>
+    </div>
+
+    <q-dialog v-model="daysOpen">
+      <div class="bp-confirm">
+        <h2 class="bp-confirm-title">¿Qué días?</h2>
+        <p class="bp-confirm-text">{{ editingRoutine?.title }} · {{ editingRoutine?.childName }}</p>
+        <div class="bp-days">
+          <button
+            v-for="(d, i) in DAY_LETTERS"
+            :key="i"
+            type="button"
+            class="bp-day"
+            :class="{ 'is-on': days.includes(i) }"
+            :aria-pressed="days.includes(i)"
+            @click="days = days.includes(i) ? days.filter(x => x !== i) : [...days, i]"
+          >
+            {{ d }}
+          </button>
+        </div>
+        <div class="bp-confirm-foot q-mt-md">
+          <q-btn v-close-popup flat rounded no-caps label="Cancelar" color="grey-7" class="col" />
+          <button type="button" class="bp-submit col" :disabled="!days.length || savingDays" @click="saveDays">Guardar</button>
+        </div>
+      </div>
+    </q-dialog>
+
     <div class="bp-sheet">
       <!--
         "Completadas" doubles as the inbox: an approved mission flies into it
@@ -148,7 +195,7 @@
 import { ref, reactive, computed, onBeforeUnmount } from 'vue'
 import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
-import { assignments, setAssignmentStatus, evidenceUrl, useResource } from '@/lib/api'
+import { assignments, setAssignmentStatus, evidenceUrl, routines, updateRoutine, stopRoutine, useResource } from '@/lib/api'
 import { onNotification } from '@/lib/notifications'
 import { flyTo } from '@/lib/fly'
 
@@ -159,6 +206,43 @@ const STATE = {
 }
 
 const { data, loading, error, reload } = useResource(assignments)
+
+// ------------------------------------------------------------ routines
+const { data: routineData, reload: reloadRoutines } = useResource(routines)
+const routineList = computed(() => routineData.value?.routines ?? [])
+const DAY_LETTERS = ['D', 'L', 'M', 'M', 'J', 'V', 'S']
+const stoppingId = ref(null)
+const daysOpen = ref(false)
+const editingRoutine = ref(null)
+const days = ref([])
+const savingDays = ref(false)
+
+async function stop (r) {
+  stoppingId.value = r.id
+  try {
+    await stopRoutine(r.id)
+    await Promise.all([reloadRoutines({ quiet: true }), reload({ quiet: true })])
+  } finally {
+    stoppingId.value = null
+  }
+}
+
+function openDays (r) {
+  editingRoutine.value = r
+  days.value = [...r.days]
+  daysOpen.value = true
+}
+
+async function saveDays () {
+  savingDays.value = true
+  try {
+    await updateRoutine(editingRoutine.value.id, days.value)
+    daysOpen.value = false
+    await reloadRoutines({ quiet: true })
+  } finally {
+    savingDays.value = false
+  }
+}
 const list = computed(() => data.value?.assignments ?? [])
 
 // Waiting-for-review first: that's the part of the list a parent acts on.
@@ -272,6 +356,22 @@ function onPhotoHidden () {
 </script>
 
 <style scoped>
+.bp-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+
+.bp-day {
+  padding: 9px 0;
+  border: 1.5px solid #E1ECFA;
+  border-radius: 50%;
+  background: #fff;
+  color: #55708F;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.bp-day.is-on { border-color: #1467E4; background: #EAF2FF; color: #1467E4; }
+
 /* A photo waiting for review stands out from the rest of the list. */
 .bp-row--photo {
   border-color: #FFD27A;

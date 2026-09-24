@@ -28,18 +28,28 @@
           </template>
         </MissionRow>
       </component>
+
+      <!-- Weekly email: on by default, one switch to stop it. -->
+      <MissionRow title="Resumen semanal por correo" subtitle="Cada lunes, cómo les fue a tus hijos." icon="mail" color="green">
+        <template #trailing>
+          <q-toggle :model-value="weekly" color="secondary" :disable="savingPrefs" aria-label="Resumen semanal por correo" @update:model-value="toggleWeekly" />
+        </template>
+      </MissionRow>
     </div>
+
+    <LegalDialog v-model="privacyOpen" kind="privacy" />
   </q-page>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import { signOut } from '@/lib/auth'
 import { currentUser, invalidateSession } from '@/lib/session'
-import { summary, useResource } from '@/lib/api'
+import { summary, setPrefs, useResource } from '@/lib/api'
+import LegalDialog from '@/components/LegalDialog.vue'
 
 const router = useRouter()
 
@@ -63,10 +73,25 @@ async function logout () {
 const items = computed(() => [
   { title: 'Mis hijos', subtitle: childrenLabel.value, icon: 'family_restroom', color: 'blue', to: '/hijos' },
   { title: 'Código para tu hijo', subtitle: 'Genera el código de cuenta infantil.', icon: 'pin', color: 'blue', to: '/perfil/codigo-infantil' },
+  { title: 'Reporte semanal', subtitle: 'Cómo les va a tus hijos, semana a semana.', icon: 'insights', color: 'green', to: '/reporte' },
   { title: 'Por revisar', subtitle: 'Propuestas y premios pedidos.', icon: 'inbox', color: 'amber', to: '/pendientes' },
   { title: 'Tutores', subtitle: 'Comparte la cuenta con otro adulto.', icon: 'group', color: 'purple', to: '/tutores' },
+  { title: 'Aviso de privacidad', subtitle: 'Qué datos guardamos y cómo los cuidamos.', icon: 'shield', color: 'purple', action: () => { privacyOpen.value = true } },
   { title: 'Cerrar sesión', subtitle: 'Salir de tu cuenta.', icon: 'logout', color: 'pink', action: logout },
 ])
+
+const privacyOpen = ref(false)
+const weekly = computed(() => user.value?.weeklyReport !== false)
+const savingPrefs = ref(false)
+async function toggleWeekly (on) {
+  savingPrefs.value = true
+  try {
+    await setPrefs({ weeklyReport: on })
+    if (user.value) user.value = { ...user.value, weeklyReport: on }
+  } finally {
+    savingPrefs.value = false
+  }
+}
 
 // keep routing/behaviour keys out of the row's attrs
 const rowProps = ({ to, action, ...rest }) => rest

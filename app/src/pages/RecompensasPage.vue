@@ -19,14 +19,24 @@
           v-for="r in list"
           :key="r.id"
           :title="r.title"
-          :subtitle="[r.subtitle, limitLabel(r), askedLabel(r)].filter(Boolean).join(' · ')"
+          :subtitle="[r.subtitle, limitLabel(r), goalLabel(r), askedLabel(r)].filter(Boolean).join(' · ')"
           :icon="r.icon"
           :color="r.color"
           :points="r.points"
           :sign="false"
           tappable
           @click="openGrant(r)"
-        />
+        >
+          <template #trailing>
+            <div class="bp-points-pill"><q-icon name="star" size="14px" /> {{ r.points }}</div>
+            <q-btn
+              v-if="r.familyId"
+              flat round dense size="sm" icon="edit" color="primary"
+              :aria-label="`Editar ${r.title}`"
+              @click.stop="openEdit(r)"
+            />
+          </template>
+        </MissionRow>
 
         <p v-if="!children.length" class="bp-hint">
           Agrega un hijo para poder entregar recompensas.
@@ -38,7 +48,7 @@
         icon="add"
         label="Crear recompensa"
         class="bp-cta"
-        @click="createOpen = true"
+        @click="openCreate"
       />
     </div>
 
@@ -218,7 +228,7 @@
     <q-dialog v-model="createOpen">
       <div class="bp-assign">
         <header class="bp-assign-head">
-          <h2 class="bp-assign-title">Nueva recompensa</h2>
+          <h2 class="bp-assign-title">{{ editingReward ? 'Editar recompensa' : 'Nueva recompensa' }}</h2>
           <q-btn v-close-popup flat round dense icon="close" color="grey-7" aria-label="Cerrar" />
         </header>
 
@@ -263,13 +273,59 @@
               : `Cuando un hijo la canjee ${maxPerChild === 1 ? 'una vez' : `${maxPerChild} veces`}, ya no podrá pedirla. Para dársela otra vez, crea una nueva.` }}
           </p>
 
+          <div class="bp-field-label q-mt-md">¿Hasta cuándo se puede canjear?</div>
+          <div class="bp-limit" role="radiogroup" aria-label="Fecha límite">
+            <button
+              v-for="opt in deadlineOptions"
+              :key="String(opt.value)"
+              type="button"
+              role="radio"
+              class="bp-limit-opt"
+              :class="{ 'is-on': deadline === opt.value }"
+              :aria-checked="deadline === opt.value"
+              @click="deadline = opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+
+          <div class="bp-field-label q-mt-md">¿Pide una racha?</div>
+          <div class="bp-limit" role="radiogroup" aria-label="Racha necesaria">
+            <button
+              v-for="opt in STREAKS"
+              :key="String(opt.value)"
+              type="button"
+              role="radio"
+              class="bp-limit-opt"
+              :class="{ 'is-on': requiredStreak === opt.value }"
+              :aria-checked="requiredStreak === opt.value"
+              @click="requiredStreak = opt.value"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+          <p class="bp-limit-hint">
+            {{ requiredStreak
+              ? `Además de los puntos, necesita ${requiredStreak} días seguidos haciendo misiones.`
+              : 'Basta con juntar los puntos.' }}
+          </p>
+
           <p v-if="createError" class="bp-auth-error q-mt-sm">{{ createError }}</p>
+
+          <q-btn
+            v-if="editingReward"
+            flat rounded no-caps icon="archive" color="negative"
+            label="Archivar esta recompensa"
+            class="full-width q-mt-md"
+            :loading="archivingReward"
+            @click="archiveIt"
+          />
         </div>
 
         <footer class="bp-assign-foot">
           <q-btn v-close-popup flat rounded no-caps label="Cancelar" color="grey-7" class="col" />
           <button type="button" class="bp-submit col" :disabled="!title.trim() || saving" @click="save">
-            {{ saving ? 'Guardando…' : 'Crear' }}
+            {{ saving ? 'Guardando…' : editingReward ? 'Guardar' : 'Crear' }}
           </button>
         </footer>
       </div>
@@ -283,7 +339,7 @@ import MissionRow from '@/components/MissionRow.vue'
 import PageHeader from '@/components/PageHeader.vue'
 import GrantRewardDialog from '@/components/GrantRewardDialog.vue'
 import KidPicker from '@/components/KidPicker.vue'
-import { rewards, redemptions, summary, resolveRedemption, useResource } from '@/lib/api'
+import { rewards, redemptions, summary, resolveRedemption, useResource, updateReward, archiveReward } from '@/lib/api'
 import { apiFetch } from '@/lib/auth'
 import { onNotification } from '@/lib/notifications'
 import { celebrate } from '@/lib/celebrate'
@@ -498,6 +554,74 @@ const limitLabel = (r) => (r.maxPerChild == null ? '' : r.maxPerChild === 1 ? '1
 const saving = ref(false)
 const createError = ref('')
 
+// Deadline in days from now ('keep' = leave an existing one alone) and a streak goal.
+const DEADLINES = [
+  { value: null, label: 'Sin fecha' },
+  { value: 7, label: '1 semana' },
+  { value: 14, label: '2 semanas' },
+  { value: 30, label: '1 mes' },
+]
+const STREAKS = [
+  { value: null, label: 'No' },
+  { value: 3, label: '3 días' },
+  { value: 7, label: '7 días' },
+  { value: 14, label: '14 días' },
+]
+const deadline = ref(null)
+const deadlineOptions = computed(() => (editingReward.value?.expiresAt
+  ? [{ value: 'keep', label: goalLabel({ expiresAt: editingReward.value.expiresAt }) }, ...DEADLINES]
+  : DEADLINES))
+const requiredStreak = ref(null)
+const editingReward = ref(null)
+const archivingReward = ref(false)
+
+const DAY = 864e5
+function goalLabel (r) {
+  const parts = []
+  if (r.expiresAt) {
+    const left = Math.ceil((r.expiresAt - Date.now()) / DAY)
+    parts.push(left <= 0 ? 'Vencida' : left === 1 ? 'Vence mañana' : `Vence en ${left} días`)
+  }
+  if (r.requiredStreak) parts.push(`racha de ${r.requiredStreak} días`)
+  return parts.join(' · ')
+}
+
+function openCreate () {
+  editingReward.value = null
+  title.value = ''
+  points.value = 200
+  maxPerChild.value = 1
+  deadline.value = null
+  requiredStreak.value = null
+  createError.value = ''
+  createOpen.value = true
+}
+
+function openEdit (r) {
+  editingReward.value = r
+  title.value = r.title
+  points.value = r.points
+  maxPerChild.value = r.maxPerChild ?? null
+  // An existing deadline is kept unless the parent picks another option.
+  deadline.value = r.expiresAt ? 'keep' : null
+  requiredStreak.value = r.requiredStreak ?? null
+  createError.value = ''
+  createOpen.value = true
+}
+
+async function archiveIt () {
+  archivingReward.value = true
+  try {
+    await archiveReward(editingReward.value.id)
+    createOpen.value = false
+    await reload({ quiet: true })
+  } catch (err) {
+    createError.value = err.data?.error || 'No se pudo archivar.'
+  } finally {
+    archivingReward.value = false
+  }
+}
+
 const bump = (n) => { points.value = Math.min(2000, Math.max(50, points.value + n)) }
 
 async function save () {
@@ -505,13 +629,18 @@ async function save () {
   createError.value = ''
 
   try {
-    await apiFetch('/api/rewards', {
-      method: 'POST',
-      body: JSON.stringify({ title: title.value.trim(), points: points.value, maxPerChild: maxPerChild.value, icon: 'redeem', color: 'blue' }),
-    })
-    title.value = ''
-    points.value = 200
-    maxPerChild.value = 1
+    const goal = {
+      ...(deadline.value === 'keep' ? {} : deadline.value ? { expiresInDays: deadline.value } : { expiresAt: null }),
+      requiredStreak: requiredStreak.value,
+    }
+    if (editingReward.value) {
+      await updateReward(editingReward.value.id, { title: title.value.trim(), points: points.value, maxPerChild: maxPerChild.value, ...goal })
+    } else {
+      await apiFetch('/api/rewards', {
+        method: 'POST',
+        body: JSON.stringify({ title: title.value.trim(), points: points.value, maxPerChild: maxPerChild.value, icon: 'redeem', color: 'blue', ...goal }),
+      })
+    }
     createOpen.value = false
     await reload({ quiet: true })
   } catch (err) {
