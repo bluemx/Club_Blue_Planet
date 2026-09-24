@@ -100,3 +100,11 @@ export function useResource (loader, initial = null) {
   reload()
   return { data, loading, error, reload }
 }
+
+/** Parent sets a child's year of birth (null clears it). */
+export const setChildBirthYear = (childId, birthYear) =>
+  apiFetch(`/api/children/${childId}`, { method: 'PATCH', body: JSON.stringify({ birthYear }) })
+
+/** Five AI mission ideas for a child's age and a topic; nothing is saved. */
+export const aiIdeas = (childId, topic) =>
+  apiFetch('/api/suggestions/ai', { method: 'POST', body: JSON.stringify({ childId, topic }) })

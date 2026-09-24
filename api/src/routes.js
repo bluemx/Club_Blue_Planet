@@ -361,8 +361,8 @@ api.get('/summary', async (c) => {
 
   // The session user doesn't carry the avatar column, so both branches read the table.
   const children = isKid
-    ? [await c.env.DB.prepare('SELECT id, name, avatar FROM user WHERE id = ?').bind(c.get('user').id).first()]
-    : (await c.env.DB.prepare('SELECT id, name, avatar FROM user WHERE familyId = ? AND role = ? ORDER BY createdAt')
+    ? [await c.env.DB.prepare('SELECT id, name, avatar, birthYear FROM user WHERE id = ?').bind(c.get('user').id).first()]
+    : (await c.env.DB.prepare('SELECT id, name, avatar, birthYear FROM user WHERE familyId = ? AND role = ? ORDER BY createdAt')
         .bind(familyId, 'kid').all()).results ?? []
 
   const withPoints = await Promise.all(
@@ -647,6 +647,102 @@ api.get('/assignments/:id/evidence', async (c) => {
 })
 
 // ---------------------------------------------------------------- children
+
+/** A parent sets a child's year of birth (for age-fitting AI ideas). */
+api.patch('/children/:id', async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const body = await c.req.json().catch(() => ({}))
+  const year = new Date().getFullYear()
+  const birthYear = body.birthYear === null ? null : Number(body.birthYear)
+  if (birthYear !== null && !(Number.isInteger(birthYear) && birthYear >= year - 18 && birthYear <= year - 2)) {
+    return c.json({ error: 'Edad inválida.' }, 400)
+  }
+  const res = await c.env.DB
+    .prepare("UPDATE user SET birthYear = ? WHERE id = ? AND familyId = ? AND role = 'kid'")
+    .bind(birthYear, c.req.param('id'), c.get('familyId'))
+    .run()
+  if (!res.meta?.changes) return c.json({ error: 'No encontrado.' }, 404)
+  return c.json({ ok: true, birthYear })
+})
+
+// ------------------------------------------------------------ AI ideas
+
+// Cheap and quick; ideas are a handful of short lines.
+const AI_MODEL = '@cf/meta/llama-3.1-8b-instruct-fast'
+// Mirrors app/src/lib/categories.js: the model picks one, we keep its icon.
+const AI_CATEGORIES = {
+  rutina: ['wb_sunny', 'amber'], higiene: ['clean_hands', 'green'], orden: ['bed', 'blue'],
+  casa: ['cleaning_services', 'pink'], escuela: ['school', 'blue'], lectura: ['menu_book', 'purple'],
+  deporte: ['directions_run', 'green'], alimentacion: ['restaurant', 'amber'], convivencia: ['favorite', 'pink'],
+  creatividad: ['palette', 'purple'], responsabilidad: ['task_alt', 'blue'],
+}
+const aiLimit = rateLimit({ name: 'ai-ideas', windowSec: 600, max: 15 })
+
+/**
+ * Five mission ideas for one child, from a parent's topic ("mejorar higiene",
+ * "ser responsable"…), pitched at the child's age. Nothing is saved: the
+ * parent picks one in the creator and saves it like any other mission.
+ */
+api.post('/suggestions/ai', aiLimit, async (c) => {
+  const blocked = parentOnly(c); if (blocked) return blocked
+  const body = await c.req.json().catch(() => ({}))
+  const topic = String(body.topic || '').trim().slice(0, 80)
+  if (!topic) return c.json({ error: 'Escribe un tema.' }, 400)
+
+  const child = await c.env.DB
+    .prepare("SELECT name, birthYear FROM user WHERE id = ? AND familyId = ? AND role = 'kid'")
+    .bind(body.childId, c.get('familyId'))
+    .first()
+  if (!child) return c.json({ error: 'Ese hijo no está en tu familia.' }, 404)
+  const age = child.birthYear ? new Date().getFullYear() - child.birthYear : null
+
+  const system = [
+    'Eres un experto en crianza que propone misiones diarias para niños en una app de hábitos.',
+    'Responde SOLO en español de México, con un JSON {"ideas":[...]} de exactamente 5 ideas.',
+    'Cada idea: {"title": máx 45 caracteres, en imperativo y dirigido al niño (tú); "subtitle": una pista corta de cómo hacerlo, máx 70 caracteres; "category": una de ' + Object.keys(AI_CATEGORIES).join(', ') + '; "points": 20 (fácil), 50 (normal) o 100 (reto)}.',
+    'Deben ser concretas, posibles en casa o la escuela en un día, y adecuadas a la edad: a los 3 a 6 años, cosas muy simples y cortas; de 10 en adelante, más autonomía.',
+    'Seguridad primero: nada de productos de limpieza o químicos, cuchillos, estufa, fuego, salir solo a la calle, dinero, ni pantallas como premio. Si algo requiere un adulto, dilo en la pista.',
+  ].join(' ')
+  const user = `Niño/a${age ? ` de ${age} años` : ' (edad desconocida, piensa en 6 a 10 años)'}. Tema que quieren trabajar sus papás: "${topic}".`
+
+  let raw
+  try {
+    raw = await c.env.AI.run(AI_MODEL, {
+      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      max_tokens: 700,
+      temperature: 0.7,
+      response_format: { type: 'json_object' },
+    })
+  } catch (err) {
+    console.error('ai ideas', err)
+    return c.json({ error: 'La IA no respondió. Inténtalo de nuevo.' }, 502)
+  }
+
+  // The model may hand back an object or a string; take the ideas either way.
+  let parsed = raw?.response
+  if (typeof parsed === 'string') {
+    try { parsed = JSON.parse(parsed.slice(parsed.indexOf('{'), parsed.lastIndexOf('}') + 1)) } catch { parsed = null }
+  }
+  const clip = (v, n) => String(v ?? '').replace(/\s+/g, ' ').trim().slice(0, n)
+  const ideas = (Array.isArray(parsed?.ideas) ? parsed.ideas : [])
+    .map((i) => {
+      const key = String(i?.category ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      const [icon, color] = AI_CATEGORIES[key] ?? ['star', 'amber']
+      const p = Number(i?.points)
+      return {
+        title: clip(i?.title, 80),
+        subtitle: clip(i?.subtitle, 120) || null,
+        icon,
+        color,
+        points: [20, 50, 100].includes(p) ? p : 50,
+      }
+    })
+    .filter(i => i.title)
+    .slice(0, 5)
+
+  if (!ideas.length) return c.json({ error: 'No salieron ideas esta vez. Inténtalo de nuevo.' }, 502)
+  return c.json({ ideas, age })
+})
 
 /** Remove a child, their assignments and every photo they uploaded. */
 api.delete('/children/:id', async (c) => {
