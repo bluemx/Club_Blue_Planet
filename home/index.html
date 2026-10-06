@@ -711,7 +711,7 @@
           <ul class="mt-4 space-y-2.5 text-sm font-semibold">
             <li><a href="https://clubblueplanet-app.ealbinu.workers.dev/#/login" class="text-white/85 transition hover:text-brand-lime">Iniciar sesión</a></li>
             <li><a href="https://clubblueplanet-app.ealbinu.workers.dev/#/registro" class="text-white/85 transition hover:text-brand-lime">Crear cuenta</a></li>
-            <li><a href="https://clubblueplanet-app.ealbinu.workers.dev/#/login" class="text-white/85 transition hover:text-brand-lime">Seguridad y privacidad</a></li>
+            <li><a href="#privacidad" class="text-white/85 transition hover:text-brand-lime">Seguridad y privacidad</a></li>
           </ul>
         </div>
 
@@ -808,6 +808,97 @@
       addEventListener('resize', onScroll, { passive: true })
       sweep()
     })();
+  </script>
+
+  <!-- ─────────────── Seguridad y privacidad (popup) ─────────────── -->
+  <!-- Términos y aviso: copia de app/src/data/legal.js — si cambia allá, actualizar aquí. -->
+  <dialog id="privacidad" aria-labelledby="privacidad-title"
+    class="m-auto w-[min(92vw,720px)] max-h-[88vh] open:flex flex-col overflow-hidden rounded-[1.75rem] bg-white p-0 text-brand-navy shadow-2xl backdrop:bg-brand-deep/60">
+    <div class="shrink-0 border-b border-brand-sky bg-white px-6 pb-3 pt-5">
+      <div class="flex items-start justify-between gap-4">
+        <h2 id="privacidad-title" class="text-2xl font-black">Seguridad y <span class="text-brand-primary">privacidad</span></h2>
+        <form method="dialog"><button class="rounded-full p-2 text-2xl leading-none text-brand-navy/60 hover:bg-brand-sky" aria-label="Cerrar">&times;</button></form>
+      </div>
+      <nav class="mt-3 flex flex-wrap gap-2 text-xs font-extrabold uppercase tracking-wide">
+        <a href="#seguridad" class="rounded-full bg-brand-sky px-3 py-1.5 text-brand-primary">Cómo te cuidamos</a>
+        <a href="#terminos" class="rounded-full bg-brand-sky px-3 py-1.5 text-brand-primary">Términos y condiciones</a>
+        <a href="#aviso" class="rounded-full bg-brand-sky px-3 py-1.5 text-brand-primary">Aviso de privacidad</a>
+      </nav>
+    </div>
+    <div class="min-h-0 flex-1 overflow-y-auto px-6 pb-8">
+        <section id="seguridad" class="scroll-mt-4 pt-6">
+          <h3 class="text-xl font-black">Cómo mantenemos segura tu información</h3>
+          <ul class="mt-4 grid gap-3 sm:grid-cols-2">
+            <li class="rounded-2xl bg-brand-sky/70 p-4"><strong class="block font-extrabold">Tus datos no se venden ni se comparten</strong><span class="mt-1 block text-sm leading-relaxed text-brand-navy/75">Nunca vendemos, rentamos ni compartimos la información de tu familia con nadie. No hay anuncios ni perfiles comerciales. Solo nuestro proveedor de infraestructura la procesa, únicamente para que la app funcione.</span></li>
+            <li class="rounded-2xl bg-brand-sky/70 p-4"><strong class="block font-extrabold">Cada familia ve solo lo suyo</strong><span class="mt-1 block text-sm leading-relaxed text-brand-navy/75">Las misiones, fotos, puntos y avisos de tus hijos solo los ven los adultos de tu familia. Ninguna otra familia puede verlos.</span></li>
+            <li class="rounded-2xl bg-brand-sky/70 p-4"><strong class="block font-extrabold">Los niños entran sin correo ni contraseña</strong><span class="mt-1 block text-sm leading-relaxed text-brand-navy/75">Tu hijo entra con un código de 6 dígitos que tú generas desde tu cuenta. No le pedimos correo, teléfono ni ningún dato de contacto.</span></li>
+            <li class="rounded-2xl bg-brand-sky/70 p-4"><strong class="block font-extrabold">Fotos privadas</strong><span class="mt-1 block text-sm leading-relaxed text-brand-navy/75">Las fotos de evidencia se guardan en un almacenamiento privado y solo se pueden ver con la sesión de un adulto de la familia o del propio niño.</span></li>
+            <li class="rounded-2xl bg-brand-sky/70 p-4"><strong class="block font-extrabold">Conexión cifrada y contraseñas protegidas</strong><span class="mt-1 block text-sm leading-relaxed text-brand-navy/75">Toda la comunicación viaja cifrada (HTTPS) y las contraseñas se guardan cifradas; nadie, ni nosotros, puede leerlas.</span></li>
+            <li class="rounded-2xl bg-brand-sky/70 p-4"><strong class="block font-extrabold">Tú tienes el control</strong><span class="mt-1 block text-sm leading-relaxed text-brand-navy/75">Solo un adulto puede crear el perfil de un niño, con su consentimiento. Puedes borrar el perfil de un hijo cuando quieras y su sesión se cierra en ese momento.</span></li>
+          </ul>
+        </section>
+
+        <section id="terminos" class="scroll-mt-4 pt-8">
+          <h3 class="text-xl font-black text-brand-navy">Términos y condiciones</h3>
+          <p class="mt-1 text-xs font-semibold text-brand-navy/50">Última actualización: 26 de agosto de 2026</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">1. Sobre Club Blue Planet</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Club Blue Planet es una aplicación familiar que propone misiones para crear buenos hábitos a niñas y niños, permite a sus madres, padres o tutores aprobarlas y otorgar recompensas dentro del hogar.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">2. Cuentas y edad mínima</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">La cuenta principal debe ser creada por una persona mayor de edad. Las cuentas infantiles se habilitan únicamente mediante el código de 6 dígitos que genera la cuenta adulta, y quedan bajo su supervisión.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">3. Uso del código de acceso infantil</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">El código es personal y temporal. La persona adulta titular es responsable de compartirlo únicamente con su hija o hijo y de generar uno nuevo si considera que fue divulgado.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">4. Misiones y recompensas</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Las misiones son sugerencias educativas. Las recompensas se acuerdan y entregan dentro de la familia: Club Blue Planet no entrega premios, dinero ni bienes de ningún tipo.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">5. Conducta esperada</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">No está permitido usar la aplicación para publicar contenido ofensivo, suplantar a otra persona ni intentar vulnerar la seguridad del servicio.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">6. Cambios en el servicio</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Podemos actualizar o suspender funciones. Si un cambio afecta de forma significativa tus derechos, te avisaremos dentro de la aplicación antes de que entre en vigor.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">7. Contacto</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">¿Dudas sobre estos términos? Escríbenos a hola@clubblueplanet.com.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">8. Créditos</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Las caras de los avatares usan el diseño «Adventurer Neutral» de Lisa Wischofsky, bajo licencia CC BY 4.0 (creativecommons.org/licenses/by/4.0), generado con DiceBear.</p>
+        </section>
+
+        <section id="aviso" class="scroll-mt-4 pt-8">
+          <h3 class="text-xl font-black text-brand-navy">Aviso de privacidad</h3>
+          <p class="mt-1 text-xs font-semibold text-brand-navy/50">Última actualización: 24 de septiembre de 2026</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">1. Quién trata tus datos</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Club Blue Planet es responsable del tratamiento de los datos personales que nos proporcionas al crear y usar tu cuenta, conforme a la Ley Federal de Protección de Datos Personales en Posesión de los Particulares.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">2. Qué datos recabamos</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">De la cuenta adulta: nombre y correo electrónico. De cada hija o hijo: un nombre o apodo, su año de nacimiento (si decides registrarlo), el avatar que diseña, sus misiones, puntos y premios, y las fotos que toma como evidencia de sus misiones. No pedimos dirección, teléfono, escuela ni datos de pago.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">3. Para qué los usamos</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Para dar acceso a la cuenta, mostrar el progreso de las misiones, calcular puntos, rachas y premios, enviar avisos dentro de la app y, si no lo desactivas, un resumen semanal por correo a los adultos de la familia.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">4. Datos de menores y consentimiento</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Solo una persona adulta puede crear el perfil de una niña o niño, y al hacerlo declara ser su madre, padre o tutor y da su consentimiento para tratar estos datos. La información de un menor solo la ven los adultos de su familia dentro de la app. No la usamos con fines publicitarios, no hacemos perfiles comerciales y no la compartimos con terceros con fines comerciales.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">5. Fotos de evidencia</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Las fotos que toma tu hija o hijo se guardan de forma privada y solo las ve su familia. Se reducen de tamaño antes de subirse. Al eliminar el perfil de un menor, se borran también todas sus fotos.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">6. Ideas de misiones</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Cuando pides ideas de misiones, enviamos al proveedor de inteligencia artificial solo la edad del menor y el tema que escribes, nunca su nombre, fotos ni otros datos. Las ideas no se guardan hasta que tú creas la misión.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">7. Con quién los compartimos</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">No vendemos datos personales. Solo los compartimos con los proveedores tecnológicos que operan el servicio (alojamiento, base de datos, almacenamiento de fotos, envío de correo e inteligencia artificial, en la infraestructura de Cloudflare), obligados a protegerlos.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">8. Tus derechos</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Puedes acceder, rectificar, cancelar u oponerte al tratamiento de tus datos (derechos ARCO), retirar tu consentimiento, y eliminar el perfil de tus hijas o hijos desde la app en Hijos, o escribiendo a privacidad@clubblueplanet.com.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">9. Conservación</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Conservamos la información mientras la cuenta esté activa. Al eliminar un perfil o una cuenta, borramos sus datos y fotos, salvo lo que debamos conservar por obligación legal.</p>
+          <h4 class="mt-5 font-extrabold text-brand-navy">10. Cookies</h4>
+          <p class="mt-1 text-sm leading-relaxed text-brand-navy/75">Usamos únicamente cookies necesarias para mantener tu sesión iniciada. No usamos cookies de publicidad ni de rastreo.</p>
+        </section>
+    </div>
+  </dialog>
+  <script>
+    // Opens from any link to #privacidad (and on load with that hash); in-dialog links just scroll.
+    (function () {
+      var d = document.getElementById('privacidad')
+      if (!d || !d.showModal) return
+      function open (e) { if (e) e.preventDefault(); if (!d.open) d.showModal() }
+      document.querySelectorAll('a[href="#privacidad"]').forEach(function (a) { a.addEventListener('click', open) })
+      d.querySelectorAll('nav a').forEach(function (a) {
+        a.addEventListener('click', function (e) { e.preventDefault(); d.querySelector(a.getAttribute('href')).scrollIntoView({ behavior: 'smooth' }) })
+      })
+      d.addEventListener('click', function (e) { if (e.target === d) d.close() })
+      if (location.hash === '#privacidad') open()
+      addEventListener('hashchange', function () { if (location.hash === '#privacidad') open() })
+    })()
   </script>
 </body>
 </html>
