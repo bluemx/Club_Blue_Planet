@@ -416,6 +416,26 @@
     .play-end.on .cap { opacity: 1; transform: none; }
     .play-spark { animation: play-twinkle 3s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
     @keyframes play-twinkle { 0%, 100% { opacity: .3; transform: scale(.7); } 50% { opacity: 1; transform: scale(1); } }
+    /* Text accents: lime marker highlight, pull quote, eyebrow chips, list ticks */
+    .hl { background: linear-gradient(transparent 58%, rgba(198, 228, 75, .65) 58% 92%, transparent 92%); font-weight: 800; padding: 0 .1em; }
+    .pull {
+      background: linear-gradient(160deg, #FFFFFF, #EEF5FF);
+      box-shadow: 0 1px 2px rgba(11, 43, 107, .05), 0 14px 28px -14px rgba(11, 43, 107, .22), inset 0 1px 0 #fff, inset 4px 0 0 #C6E44B;
+    }
+    .eyebrow { display: inline-block; border-radius: 999px; padding: .35rem .85rem; font-size: 11px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 4px 10px -6px rgba(11, 43, 107, .3); }
+    .eyebrow-blue { background: #E3EFFF; color: #1467E4; }
+    .eyebrow-green { background: #DDF6E8; color: #12945E; }
+    .tick { display: grid; place-items: center; flex: none; width: 1.4rem; height: 1.4rem; margin-top: 1px; border-radius: 999px; color: #0B2B6B; background: linear-gradient(180deg, #DDF07A, #C6E44B); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 3px 6px -2px rgba(116, 148, 20, .5); }
+    .store {
+      position: relative; display: inline-flex; align-items: center; gap: .6rem;
+      padding: .55rem 1.1rem .55rem .85rem; border-radius: .9rem; color: #fff;
+      background: linear-gradient(180deg, #14254A, #050E22);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 1px 0 rgba(255, 255, 255, .08), 0 10px 20px -10px rgba(0, 0, 0, .7);
+      font-size: 1.05rem; font-weight: 800; line-height: 1.05;
+    }
+    .store small { display: block; font-size: .62rem; font-weight: 700; opacity: .75; }
+    .store em { position: absolute; top: -.55rem; right: -.4rem; padding: .1rem .45rem; border-radius: 999px; background: #C6E44B; color: #071E4E; font-style: normal; font-size: .6rem; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; box-shadow: 0 3px 6px -2px rgba(0, 0, 0, .4); }
+
     @media (prefers-reduced-motion: reduce) {
       .play *, .play *::before { animation: none !important; transition: none !important; }
       html { scroll-behavior: auto; }
@@ -524,7 +544,7 @@
           Tú tienes el control, siempre
         </h2>
 
-        <div class="mt-10 grid items-center gap-10 md:grid-cols-2 md:gap-14">
+        <div class="mt-10 grid items-center gap-10 md:grid-cols-[0.8fr_1.2fr] md:gap-12">
           <div class="phone-stage mx-auto w-full max-w-[290px]">
             <div class="phone">
               <img src="assets/screens/asignar.jpg" width="560" height="1212"
@@ -533,18 +553,47 @@
             </div>
           </div>
 
-          <div class="space-y-6">
+          <div>
             <p class="text-base leading-relaxed md:text-lg">
-              <strong class="font-black">Club Blue Planet</strong> es una app familiar que
-              convierte las responsabilidades diarias de los niños en aventuras, ayudando a
-              madres y padres a organizar rutinas, fomentar buenos hábitos y acompañar su
-              desarrollo de forma divertida.
+              <strong class="font-black">Club Blue Planet</strong> es una app familiar que convierte las responsabilidades diarias en
+              <span class="hl">misiones con propósito</span>: ayuda a madres y padres a organizar rutinas, fomentar buenos hábitos y acompañar su desarrollo de forma divertida.
             </p>
-
-            <p class="text-base leading-relaxed md:text-lg">
-              <strong class="font-black">Acompaña</strong> a tu hijo en su aventura con la
-              tranquilidad de estar al tanto de cada paso.
-            </p>
+            <div class="mt-7 grid gap-4 sm:grid-cols-2">
+              <article class="card rise flex flex-col gap-3 p-5 text-left" style="--i:0">
+                <span class="tile tile-pink !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span>
+                <div>
+                  <h3 class="text-[15px] font-black leading-snug text-brand-navy">Menos «¿ya hiciste…?», más «¡lo logré!»</h3>
+                  <p class="mt-1 text-[13.5px] font-semibold leading-relaxed text-brand-navy/65">Las misiones cambian los recordatorios y regaños por metas claras que tu hijo quiere cumplir.</p>
+                </div>
+              </article>
+              <article class="card rise flex flex-col gap-3 p-5 text-left" style="--i:1">
+                <span class="tile tile-blue !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+                <div>
+                  <h3 class="text-[15px] font-black leading-snug text-brand-navy">Hábitos diarios que se aprenden solos</h3>
+                  <p class="mt-1 text-[13.5px] font-semibold leading-relaxed text-brand-navy/65">Higiene, orden, escuela, alimentación y convivencia, convertidos en retos con puntos e insignias.</p>
+                </div>
+              </article>
+              <article class="card rise flex flex-col gap-3 p-5 text-left" style="--i:2">
+                <span class="tile tile-amber !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01M22 8h.01M15 2h.01M22 20h.01"/><path d="m22 2-2.24.75a2.9 2.9 0 0 0-1.96 3.12c.1.86-.57 1.63-1.45 1.63h-.38c-.86 0-1.6.6-1.76 1.44L14 10"/><path d="m22 13-.82-.33c-.86-.34-1.82.2-1.98 1.11-.11.7-.72 1.22-1.43 1.22H17"/><path d="m11 2 .33.82c.34.86-.2 1.82-1.11 1.98-.7.1-1.22.72-1.22 1.43V7"/><path d="M11 13c1.93 1.93 2.83 4.17 2 5-.83.83-3.07-.07-5-2-1.93-1.93-2.83-4.17-2-5 .83-.83 3.07.07 5 2Z"/></svg></span>
+                <div>
+                  <h3 class="text-[15px] font-black leading-snug text-brand-navy">Cada logro se celebra juntos</h3>
+                  <p class="mt-1 text-[13.5px] font-semibold leading-relaxed text-brand-navy/65">Tú apruebas su foto y le llega una celebración con sus puntos. Un «¡bien hecho!» que sí se siente.</p>
+                </div>
+              </article>
+              <article class="card rise flex flex-col gap-3 p-5 text-left" style="--i:3">
+                <span class="tile tile-green !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span>
+                <div>
+                  <h3 class="text-[15px] font-black leading-snug text-brand-navy">La constancia se vuelve visible</h3>
+                  <p class="mt-1 text-[13.5px] font-semibold leading-relaxed text-brand-navy/65">Rachas diarias y un reporte cada semana para ver cuánto ha crecido, juntos.</p>
+                </div>
+              </article>
+            </div>
+            <figure class="pull mt-6 flex items-center gap-4 rounded-[1.5rem] px-6 py-5">
+              <span class="text-brand-primary"><svg class="h-8 w-8 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.76-2.02-2-2H4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .01-1 1.03V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.76-2.02-2-2h-4c-1.25 0-2 .75-2 1.97V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg></span>
+              <blockquote class="text-lg font-black leading-snug text-brand-deep md:text-xl">
+                Pequeñas misiones, <span class="text-brand-primary">grandes conversaciones</span> en familia.
+              </blockquote>
+            </figure>
           </div>
         </div>
       </div>
@@ -561,25 +610,121 @@
         Descubre la <span class="text-brand-primary">app</span>
       </h2>
 
-      <p class="mt-6 max-w-xl text-base leading-relaxed md:text-lg">
-        <strong class="font-black">Misión por misión</strong><br />
-        Cumple retos, gana puntos y canjéalos por premios.
-        Así de simple es Club Blue Planet.
+      <p class="mt-6 max-w-2xl text-base leading-relaxed md:text-lg">
+        <strong class="font-black">Misión por misión.</strong> Cumple retos, gana puntos y canjéalos por premios.
+        Una app para dos: <span class="hl">tú organizas y acompañas</span>, tu hijo cumple y celebra.
       </p>
 
-      <div class="mt-12 grid justify-center gap-10 sm:grid-cols-2 sm:gap-8 md:gap-14">
-        <div class="phone-stage mx-auto w-full max-w-[290px]">
+      <div class="mt-14 grid items-center gap-10 md:grid-cols-2 md:gap-16">
+        <div class="phone-stage mx-auto w-full max-w-[280px]">
           <div class="phone">
-            <img src="assets/screens/monitorear.jpg" width="560" height="1212"
-                 alt="Pantalla para monitorear y aprobar las tareas de tus hijos" loading="lazy" />
-              <span class="glass"></span>
+            <img src="assets/screens/monitorear.jpg" width="560" height="1212" alt="Pantalla para monitorear y aprobar las misiones de tus hijos" loading="lazy" />
+            <span class="glass"></span>
           </div>
         </div>
-        <div class="phone-stage mx-auto w-full max-w-[290px] sm:mt-12">
+        <div class="">
+          <span class="eyebrow eyebrow-blue">Para mamá y papá</span>
+          <h3 class="mt-3 text-2xl font-black leading-tight md:text-3xl">Revisa y aprueba en segundos</h3>
+          <p class="mt-3 text-base leading-relaxed text-brand-navy/75 md:text-lg">Cuando tu hijo termina una misión, te llega su foto. La ves, la apruebas con un toque y sus puntos se suman al instante.</p>
+          <ul class="mt-5 space-y-3">
+            <li class="flex items-start gap-3 text-[15px] font-semibold leading-snug"><span class="tick"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span>Fotos de evidencia con vista previa, listas para revisar</span></li>
+            <li class="flex items-start gap-3 text-[15px] font-semibold leading-snug"><span class="tick"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span>Misiones que se repiten solas: diario, entre semana o los días que elijas</span></li>
+            <li class="flex items-start gap-3 text-[15px] font-semibold leading-snug"><span class="tick"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span>Pausa o edita una rutina cuando cambien los horarios</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-14 grid items-center gap-10 md:grid-cols-2 md:gap-16">
+        <div class="phone-stage mx-auto w-full max-w-[280px]">
           <div class="phone">
-            <img src="assets/screens/sugeridas.jpg" width="560" height="1212"
-                 alt="Pantalla con las misiones sugeridas, listas para asignar" loading="lazy" />
-              <span class="glass"></span>
+            <img src="assets/screens/sugeridas.jpg" width="560" height="1212" alt="Pantalla con las misiones sugeridas, listas para asignar" loading="lazy" />
+            <span class="glass"></span>
+          </div>
+        </div>
+        <div class="md:order-first">
+          <span class="eyebrow eyebrow-green">Para empezar hoy</span>
+          <h3 class="mt-3 text-2xl font-black leading-tight md:text-3xl">Misiones listas para asignar</h3>
+          <p class="mt-3 text-base leading-relaxed text-brand-navy/75 md:text-lg">No empiezas de cero: elige entre 18 misiones sugeridas o crea las tuyas con los puntos que valgan para tu familia.</p>
+          <ul class="mt-5 space-y-3">
+            <li class="flex items-start gap-3 text-[15px] font-semibold leading-snug"><span class="tick"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span>Sugerencias de higiene, orden, escuela, lectura y más</span></li>
+            <li class="flex items-start gap-3 text-[15px] font-semibold leading-snug"><span class="tick"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span>Asigna a uno o a todos tus hijos a la vez</span></li>
+            <li class="flex items-start gap-3 text-[15px] font-semibold leading-snug"><span class="tick"><svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg></span><span>Tu hijo también puede proponer misiones y tú decides</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <h3 class="mt-20 text-center text-xl font-black md:text-2xl">Y mucho más dentro de la app</h3>
+      <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="card rise flex gap-4 p-5" style="--i:0">
+          <span class="tile tile-blue !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg></span>
+          <div>
+            <h4 class="font-black text-brand-navy">Inicio de la familia</h4>
+            <p class="mt-1 text-sm font-semibold leading-relaxed text-brand-navy/65">Todos tus hijos de un vistazo: puntos, racha y lo que espera tu revisión.</p>
+          </div>
+        </article>
+        <article class="card rise flex gap-4 p-5" style="--i:1">
+          <span class="tile tile-amber !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></svg></span>
+          <div>
+            <h4 class="font-black text-brand-navy">Recompensas</h4>
+            <p class="mt-1 text-sm font-semibold leading-relaxed text-brand-navy/65">Crea premios con puntos, fecha límite o racha mínima, y entrégalos cuando tú decidas.</p>
+          </div>
+        </article>
+        <article class="card rise flex gap-4 p-5" style="--i:2">
+          <span class="tile tile-purple !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></span>
+          <div>
+            <h4 class="font-black text-brand-navy">Reporte semanal</h4>
+            <p class="mt-1 text-sm font-semibold leading-relaxed text-brand-navy/65">Misiones, puntos y tipos de hábito de cada hijo, comparados con la semana anterior.</p>
+          </div>
+        </article>
+        <article class="card rise flex gap-4 p-5" style="--i:3">
+          <span class="tile tile-pink !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg></span>
+          <div>
+            <h4 class="font-black text-brand-navy">La app de tu hijo</h4>
+            <p class="mt-1 text-sm font-semibold leading-relaxed text-brand-navy/65">Diseña su avatar, ve sus misiones, gana insignias y propone sus propias ideas.</p>
+          </div>
+        </article>
+        <article class="card rise flex gap-4 p-5" style="--i:4">
+          <span class="tile tile-green !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg></span>
+          <div>
+            <h4 class="font-black text-brand-navy">Cámara con stickers</h4>
+            <p class="mt-1 text-sm font-semibold leading-relaxed text-brand-navy/65">Tu hijo reporta cada misión con una foto divertida que solo ve su familia.</p>
+          </div>
+        </article>
+        <article class="card rise flex gap-4 p-5" style="--i:5">
+          <span class="tile tile-blue !mx-0 shrink-0" style="width:3.25rem;height:3.25rem;border-radius:1rem"><svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6M10 22h4"/></svg></span>
+          <div>
+            <h4 class="font-black text-brand-navy">Ideas según su edad</h4>
+            <p class="mt-1 text-sm font-semibold leading-relaxed text-brand-navy/65">¿No sabes qué pedirle? Elige un tema y recibe misiones pensadas para su edad.</p>
+          </div>
+        </article>
+      </div>
+
+      <!-- Download CTA. The store listings aren't live yet: the badges say so,
+           and the working path today is the web app. -->
+      <div class="band relative mt-16 overflow-hidden rounded-[2rem] px-7 py-10 text-white md:px-12 md:py-12">
+        <div class="grid items-center gap-8 md:grid-cols-[1.4fr_1fr]">
+          <div>
+            <h3 class="text-2xl font-black leading-tight md:text-3xl">Lleva Club Blue Planet <span class="text-brand-lime">en tu bolsillo</span></h3>
+            <p class="mt-3 max-w-lg text-base font-semibold leading-relaxed text-white/80">Descarga la app, crea tu familia en un minuto y asigna la primera misión hoy mismo.</p>
+            <div class="mt-6 flex flex-wrap gap-3">
+              <span class="store" aria-label="App Store, próximamente">
+                <svg class="h-7 w-7" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.37 12.6c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.7-3.18-1.73-1.35-.14-2.65.8-3.33.8-.69 0-1.75-.78-2.88-.76a4.26 4.26 0 0 0-3.59 2.19c-1.54 2.66-.39 6.6 1.1 8.76.73 1.06 1.6 2.24 2.74 2.2 1.1-.05 1.52-.71 2.85-.71 1.33 0 1.7.71 2.87.69 1.19-.02 1.94-1.07 2.66-2.14.84-1.22 1.19-2.41 1.2-2.47-.03-.01-2.3-.88-2.32-3.52zM14.2 6.13c.6-.74 1.01-1.75.9-2.77-.87.04-1.94.59-2.56 1.32-.56.64-1.05 1.69-.92 2.68.97.08 1.97-.49 2.58-1.23z"/></svg>
+                <span><small>Descárgala en el</small>App Store</span><em>Pronto</em>
+              </span>
+              <span class="store" aria-label="Google Play, próximamente">
+                <svg class="h-6 w-6" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2.5v19l10-9.5z" fill="#34C77B"/><path d="M4 2.5 17.5 10 14 12z" fill="#4C95FF"/><path d="M4 21.5 17.5 14 14 12z" fill="#FF6B6B"/><path d="M17.5 10 21 12l-3.5 2-3.5-2z" fill="#FFC94D"/></svg>
+                <span><small>Disponible en</small>Google Play</span><em>Pronto</em>
+              </span>
+            </div>
+            <a href="https://clubblueplanet-app.ealbinu.workers.dev/#/registro" class="mt-5 inline-flex items-center gap-2 text-sm font-extrabold text-brand-lime hover:underline">
+              Mientras tanto, úsala ya desde tu navegador
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+            </a>
+          </div>
+          <div class="hidden md:block">
+            <div class="phone-stage mx-auto w-full max-w-[200px]" style="--ry-max:16">
+              <div class="phone"><img src="assets/screens/asignar.jpg" width="560" height="1212" alt="" loading="lazy" /><span class="glass"></span></div>
+            </div>
           </div>
         </div>
       </div>
